@@ -11,7 +11,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build_and_publish:
@@ -54,49 +60,27 @@ jobs:
       - name: Build PKHeX.Web.React
         working-directory: src/PKHeX.Web.React
         env:
-          VITE_GOOGLE_ANALYTICS: 'true'
-          VITE_SENTRY: 'true'
+          VITE_GOOGLE_ANALYTICS: 'false'
+          VITE_SENTRY: 'false'
         run: |
           npm ci
           npm run build
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: artifact-pkhex-web
           path: ./src/PKHeX.Web.React/dist
 
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build_and_publish
-
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      - name: List artifacts
-        run: ls -R artifacts
-        
-      - name: Checkout PKHeX.Web repository
-        uses: actions/checkout@v4
-        with:
-          repository: pkhex-web/pkhex-web.github.io
-          ref: gh-pages
-          path: pkhex-web
-          token: ${{ secrets.GIT_HUB_PKHEX_WEB_TOKEN }}
-
-      - name: Copy artifacts to Github pages repository
-        run: |
-          rsync -a --delete --exclude .git --exclude README.md artifacts/artifact-pkhex-web/ pkhex-web/
-
-      - name: Commit and push new artifacts
-        run: |
-          cd pkhex-web
-          touch .nojekyll
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-          git add --all
-          git commit -m "Update PKHeX.Web artifacts"
-          git push origin
-          cd ..
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
