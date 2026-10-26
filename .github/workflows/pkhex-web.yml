@@ -7,6 +7,7 @@ on:
       - 'src/PKHeX.Web.React/**'
       - 'src/PKHeX.Facade/**'
       - 'src/PKHeX.Everywhere.Engine*/**'
+      - '.github/workflows/pkhex-web.yml'
       
   workflow_dispatch:
 

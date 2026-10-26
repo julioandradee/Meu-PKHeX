@@ -15,6 +15,7 @@ import { Link, useLocation } from 'react-router'
 import { useLoadedGame, useQuery } from '@pkhex-everywhere/react'
 import { useNavigate } from '../host'
 import { routes } from '../routes'
+import { useTranslation } from '../i18n'
 import { Footer } from './Footer'
 import { RoutedContent } from './RoutedContent'
 import { menuEntries, type MenuEntry, type MenuIcon } from './menu'
@@ -42,15 +43,17 @@ function SideMenu() {
   const { pathname } = useLocation()
   const { game } = useLoadedGame()
   const installed = useQuery('plugins.installed')
+  const { t } = useTranslation()
 
   return (
-    <Menu theme="dark" mode="inline" selectedKeys={[pathname]} items={menuEntries(game, installed).map(toMenuItem)} />
+    <Menu theme="dark" mode="inline" selectedKeys={[pathname]} items={menuEntries(game, installed, t).map(toMenuItem)} />
   )
 }
 
 export function MainLayout() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -73,7 +76,8 @@ export function MainLayout() {
             icon={<SettingOutlined />}
             size="large"
             shape="round"
-            aria-label="Settings"
+            aria-label={t('common.settings')}
+            title={t('common.settings')}
             onClick={() => navigate(routes.settings)}
           />
         </Layout.Header>

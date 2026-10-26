@@ -1,9 +1,11 @@
 import { smogon } from './calculators'
 
 export type Theme = 'light' | 'dark'
+export type Language = 'pt-BR' | 'en' | 'es'
 
 // Blazored.LocalStorage wrote these keys as raw strings before the settings moved to JS.
 const themeKey = 'theme'
+const languageKey = '__settings__#language'
 const calculatorUrlKey = '__settings__#calculatorUrl'
 const lastDateNewsSeenKey = 'lastDateNewsSeen'
 const pkhemuPreviewKey = 'pkhemuClosedTest'
@@ -25,6 +27,18 @@ export function createSettings(storage: Storage = localStorage, prefersDark = pr
     },
     writeTheme(theme: Theme) {
       write(themeKey, theme)
+    },
+    readLanguage(): Language {
+      const lang = storage.getItem(languageKey)
+      if (lang === 'pt-BR' || lang === 'en' || lang === 'es') return lang
+      const browserLang = globalThis.navigator?.language?.toLowerCase() ?? ''
+      if (browserLang.startsWith('pt')) return 'pt-BR'
+      if (browserLang.startsWith('es')) return 'es'
+      if (browserLang.startsWith('en')) return 'en'
+      return 'pt-BR'
+    },
+    writeLanguage(language: Language) {
+      write(languageKey, language)
     },
     readCalculatorUrl(): string {
       return storage.getItem(calculatorUrlKey) ?? smogon.url

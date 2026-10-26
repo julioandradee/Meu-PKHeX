@@ -86,4 +86,27 @@ describe('settings', () => {
       expect(createSettings(localStorage).readPkhemuCardDismissed()).toBe(true)
     })
   })
+
+  describe('language', () => {
+    it('reads the stored language', () => {
+      localStorage.setItem('__settings__#language', 'es')
+      expect(createSettings(localStorage).readLanguage()).toBe('es')
+
+      localStorage.setItem('__settings__#language', 'en')
+      expect(createSettings(localStorage).readLanguage()).toBe('en')
+
+      localStorage.setItem('__settings__#language', 'pt-BR')
+      expect(createSettings(localStorage).readLanguage()).toBe('pt-BR')
+    })
+
+    it('writes the language to localStorage', () => {
+      createSettings(localStorage).writeLanguage('es')
+      expect(localStorage.getItem('__settings__#language')).toBe('es')
+    })
+
+    it('falls back to default language when none or invalid is stored', () => {
+      localStorage.setItem('__settings__#language', 'invalid_lang')
+      expect(['pt-BR', 'en', 'es']).toContain(createSettings(localStorage).readLanguage())
+    })
+  })
 })

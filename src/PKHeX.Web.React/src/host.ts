@@ -2,9 +2,9 @@ import { useCallback } from 'react'
 import { useNavigate as useRouterNavigate } from 'react-router'
 import { toBase64 } from './base64'
 import { createStore } from './externalStore'
-import { createSettings, type Theme } from './settings'
+import { createSettings, type Language, type Theme } from './settings'
 
-export type { Theme } from './settings'
+export type { Language, Theme } from './settings'
 
 declare global {
   var showGoogleCmpRevocationMessage: (() => void) | undefined
@@ -12,6 +12,7 @@ declare global {
 
 export const settings = createSettings()
 const themeStore = createStore(settings.readTheme())
+const languageStore = createStore(settings.readLanguage())
 const calculatorUrlStore = createStore(settings.readCalculatorUrl())
 
 export function useTheme(): Theme {
@@ -21,6 +22,15 @@ export function useTheme(): Theme {
 export function changeTheme(next: Theme) {
   settings.writeTheme(next)
   themeStore.set(next)
+}
+
+export function useLanguage(): Language {
+  return languageStore.use()
+}
+
+export function changeLanguage(next: Language) {
+  settings.writeLanguage(next)
+  languageStore.set(next)
 }
 
 export function useCalculatorUrl(): string {

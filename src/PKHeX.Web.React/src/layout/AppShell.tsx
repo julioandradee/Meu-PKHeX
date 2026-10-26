@@ -1,11 +1,14 @@
 import { useCallback, useEffect, type ReactNode } from 'react'
 import { App, ConfigProvider, theme as antdTheme } from 'antd'
+import ptBR from 'antd/locale/pt_BR'
+import esES from 'antd/locale/es_ES'
+import enUS from 'antd/locale/en_US'
 import { BrowserRouter, Navigate, Route, Routes, useParams, useSearchParams } from 'react-router'
 import type { EngineError, PageLayout, SaveCapability } from '@pkhex-everywhere/engine'
 import { EngineProvider, RequireGame, useLoadedGame } from '@pkhex-everywhere/react'
 import { engine, plugIns } from '../app'
 import { useSupports } from '../hooks/useSupports'
-import { useTheme } from '../host'
+import { useLanguage, useTheme } from '../host'
 import { PlugInsProvider } from '../plugins/PlugInsContext'
 import AnalyticsPage from '../pages/analytics/AnalyticsPage'
 import BoxPage from '../pages/box/BoxPage'
@@ -178,9 +181,12 @@ function NotifyingEngineProvider({ children }: { children: ReactNode }) {
 
 export function AppShell({ autoLoad }: { autoLoad: boolean }) {
   const theme = useTheme()
+  const language = useLanguage()
+  const antdLocale = language === 'pt-BR' ? ptBR : language === 'es' ? esES : enUS
 
   return (
     <ConfigProvider
+      locale={antdLocale}
       theme={{
         algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: { fontFamily },
