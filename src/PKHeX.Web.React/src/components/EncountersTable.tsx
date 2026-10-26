@@ -1,5 +1,6 @@
 import { Button, Table, type TableColumnsType } from 'antd'
 import type { EncounterRow } from '@pkhex-everywhere/engine'
+import { useTranslation } from '../i18n'
 import { ItemIcon } from './ItemIcon'
 import { PokemonSprite } from './PokemonSprite'
 import { NumberFilter } from './filters/NumberFilter'
@@ -15,68 +16,70 @@ interface EncountersTableProps {
 }
 
 export function EncountersTable({ encounters, adding, onAdd }: EncountersTableProps) {
+  const { t } = useTranslation()
+
   const columns: TableColumnsType<EncounterRow> = [
     {
       key: 'sprite',
       width: 80,
-      render: (_, encounter) => <PokemonSprite pokemon={encounter} />,
+      render: (_: unknown, encounter: EncounterRow) => <PokemonSprite pokemon={encounter} />,
     },
     {
-      title: 'Species',
+      title: t('encounters.species', 'Species'),
       dataIndex: 'species',
       sorter: (a, b) => a.species.localeCompare(b.species),
-      filterDropdown: (props) => <TextFilter {...props} placeholder="Species" />,
+      filterDropdown: (props) => <TextFilter {...props} placeholder={t('encounters.species', 'Species')} />,
       onFilter: (value, encounter) => containsText(encounter.species, value),
     },
     {
-      title: 'Encounter',
+      title: t('encounters.encounter', 'Encounter'),
       dataIndex: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
-      filterDropdown: (props) => <TextFilter {...props} placeholder="Encounter" />,
+      filterDropdown: (props) => <TextFilter {...props} placeholder={t('encounters.encounter', 'Encounter')} />,
       onFilter: (value, encounter) => containsText(encounter.name, value),
     },
     {
-      title: 'Ball/Egg',
+      title: t('encounters.ballEgg', 'Ball/Egg'),
       key: 'ball',
-      render: (_, encounter) => (
+      render: (_: unknown, encounter: EncounterRow) => (
         <>
-          {encounter.isEgg && '🥚 Egg'}
+          {encounter.isEgg && `🥚 ${t('encounters.egg', 'Egg')}`}
           {encounter.ball && <ItemIcon name={encounter.ball} />}
         </>
       ),
     },
     {
-      title: 'Lvl',
+      title: t('box.levelPrefix', 'Lvl'),
       dataIndex: 'levelRange',
       sorter: (a, b) => levels(a)[0] - levels(b)[0],
-      filterDropdown: (props) => <NumberFilter {...props} placeholder="Level" min={1} max={100} />,
+      filterDropdown: (props) => <NumberFilter {...props} placeholder={t('table.level', 'Level')} min={1} max={100} />,
       onFilter: (value, encounter) => {
         const [min, max = min] = levels(encounter)
         return min <= Number(value) && Number(value) <= max
       },
     },
     {
-      title: 'Location',
+      title: t('encounters.location', 'Location'),
       dataIndex: 'location',
       sorter: (a, b) => a.location.localeCompare(b.location),
-      filterDropdown: (props) => <TextFilter {...props} placeholder="Location" />,
+      filterDropdown: (props) => <TextFilter {...props} placeholder={t('encounters.location', 'Location')} />,
       onFilter: (value, encounter) => containsText(encounter.location, value),
     },
     {
-      title: 'Game',
+      title: t('encounters.game', 'Game'),
       dataIndex: 'version',
     },
     {
-      title: 'Action',
+      title: t('table.action', 'Action'),
       key: 'action',
-      render: (_, encounter) => (
+      render: (_: unknown, encounter: EncounterRow) => (
         <Button
           type="link"
           loading={adding === encounter.index}
           disabled={adding !== undefined}
           onClick={() => onAdd(encounter)}
         >
-          Add to box
+          {t('encounters.addToBox', 'Add to box')}
         </Button>
       ),
     },

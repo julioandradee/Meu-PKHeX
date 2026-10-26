@@ -6,6 +6,7 @@ import { useEngine, useLoadedGame, useQuery } from '@pkhex-everywhere/react'
 import { gameName } from '../../capabilities'
 import { AdSlot } from '../../components/AdSlot'
 import { downloadFile, useNavigate } from '../../host'
+import { useTranslation } from '../../i18n'
 import { journey } from '../../layout/journey'
 import { routes } from '../../routes'
 import { FormatPickerModal } from './FormatPickerModal'
@@ -51,6 +52,7 @@ export default function LoadPage() {
 }
 
 function LoadedGame({ game, onOpen }: { game: SaveSummary; onOpen: () => void }) {
+  const { t } = useTranslation()
   const engine = useEngine()
   const [exported, setExported] = useState(false)
 
@@ -63,27 +65,28 @@ function LoadedGame({ game, onOpen }: { game: SaveSummary; onOpen: () => void })
   return (
     <>
       <Descriptions
-        title="Loaded Game"
+        title={t('load.loadedGame')}
         bordered
         size="small"
         style={{ width: '100%' }}
         items={[
-          { key: 'file', label: 'File', children: game.fileName },
-          { key: 'version', label: 'Version', children: gameName(game) },
+          { key: 'file', label: t('trainer.file'), children: game.fileName },
+          { key: 'version', label: t('load.version', 'Version'), children: gameName(game) },
         ]}
       />
       <Flex vertical gap={20} style={{ width: '100%', maxWidth: 300 }}>
         <Button type="primary" icon={<ExportOutlined aria-hidden />} onClick={exportSave}>
-          Export
+          {t('load.export')}
         </Button>
         {exported && <PkhemuCard generation={cardGeneration(game)} onClose={() => setExported(false)} />}
-        <OpenButton label="Open new..." onOpen={onOpen} />
+        <OpenButton label={t('load.openNew')} onOpen={onOpen} />
       </Flex>
     </>
   )
 }
 
 function NoGame({ onOpen, onDemo }: { onOpen: () => void; onDemo: () => void }) {
+  const { t } = useTranslation()
   const engine = useEngine()
   const navigate = useNavigate()
   const goHome = () => {
@@ -95,12 +98,12 @@ function NoGame({ onOpen, onDemo }: { onOpen: () => void; onDemo: () => void }) 
   return (
     <Flex vertical align="center" gap={20} style={{ width: '100%', maxWidth: 300 }}>
       <Button style={{ minWidth: 150 }} onClick={goHome}>
-        Home
+        {t('menu.home')}
       </Button>
-      <OpenButton label="Open" type="primary" style={{ minWidth: 150 }} onOpen={onOpen} />
+      <OpenButton label={t('actions.load')} type="primary" style={{ minWidth: 150 }} onOpen={onOpen} />
       <Space.Compact style={{ minWidth: 150 }}>
         <Button style={{ flexGrow: 1 }} onClick={() => engine.game.loadBlank(swordVersionId)}>
-          Empty
+          {t('load.empty')}
         </Button>
         <Dropdown
           trigger={['click']}
@@ -114,7 +117,7 @@ function NoGame({ onOpen, onDemo }: { onOpen: () => void; onDemo: () => void }) 
         </Dropdown>
       </Space.Compact>
       <Button style={{ minWidth: 150 }} onClick={onDemo}>
-        Demo
+        {t('load.demo')}
       </Button>
     </Flex>
   )
@@ -128,6 +131,7 @@ interface OpenButtonProps {
 }
 
 function OpenButton({ label, type, style, onOpen }: OpenButtonProps) {
+  const { t } = useTranslation()
   const [loadingRomHack, setLoadingRomHack] = useState(false)
 
   const buttons = (
@@ -139,8 +143,8 @@ function OpenButton({ label, type, style, onOpen }: OpenButtonProps) {
         trigger={['click']}
         menu={{
           items: [
-            { key: 'open', label: 'Open save file' },
-            { key: 'romHack', label: 'Load ROM Hack' },
+            { key: 'open', label: t('load.openSaveFile') },
+            { key: 'romHack', label: t('load.loadRomHack') },
           ],
           onClick: ({ key }) => (key === 'romHack' ? setLoadingRomHack(true) : onOpen()),
         }}
@@ -154,7 +158,7 @@ function OpenButton({ label, type, style, onOpen }: OpenButtonProps) {
     <>
       {showRomHacksBadge(new Date()) ? (
         <Badge
-          count="New"
+          count={t('load.romHacks.newBadge', 'New')}
           size="small"
           color="yellow"
           // antd sets the badge to width: fit-content, and Space.Compact items to z-index 2-4.

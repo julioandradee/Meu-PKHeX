@@ -4,11 +4,13 @@ import dayjs from 'dayjs'
 import { draftHandle } from '@pkhex-everywhere/engine'
 import { useQuery } from '@pkhex-everywhere/react'
 import { ItemSelect } from '../../components/ItemSelect'
+import { useTranslation } from '../../i18n'
 import { ChoiceSelect } from './ChoiceSelect'
 import { isLocked } from './locked'
 import { useDraft } from './useDraft'
 
 export function MetConditionsTab() {
+  const { t } = useTranslation()
   const { details, submit } = useDraft()
   const options = useQuery('pokemon.options', draftHandle)
   const originGames = useQuery('game.originGames')
@@ -21,10 +23,10 @@ export function MetConditionsTab() {
       : [
           {
             key: 'version',
-            label: 'Origin Game',
+            label: t('met.originGame'),
             children: (
               <ChoiceSelect
-                label="Origin Game"
+                label={t('met.originGame')}
                 choices={originGames}
                 value={details.version}
                 onChange={(version) => submit({ version })}
@@ -37,10 +39,10 @@ export function MetConditionsTab() {
       : [
           {
             key: 'metLocation',
-            label: 'Location',
+            label: t('met.location'),
             children: (
               <ChoiceSelect
-                label="Location"
+                label={t('met.location')}
                 choices={options.metLocations}
                 value={details.metLocation}
                 disabled={isLocked(options, 'metLocation')}
@@ -50,10 +52,10 @@ export function MetConditionsTab() {
           },
           {
             key: 'metLevel',
-            label: 'Level',
+            label: t('met.level'),
             children: (
               <InputNumber
-                aria-label="Met Level"
+                aria-label={t('met.level')}
                 min={0}
                 max={100}
                 value={details.metLevel}
@@ -67,8 +69,8 @@ export function MetConditionsTab() {
       : [
           {
             key: 'ball',
-            label: 'Captured With',
-            children: <ItemSelect items={balls} label="Ball" value={details.ball} onChange={(ball) => submit({ ball: ball.id })} />,
+            label: t('met.capturedWith'),
+            children: <ItemSelect items={balls} label={t('met.capturedWith')} value={details.ball} onChange={(ball) => submit({ ball: ball.id })} />,
           },
         ]),
     ...(details.metDate === null
@@ -76,10 +78,10 @@ export function MetConditionsTab() {
       : [
           {
             key: 'metDate',
-            label: 'Date',
+            label: t('met.date'),
             children: (
               <DatePicker
-                aria-label="Met Date"
+                aria-label={t('met.date')}
                 format="DD/MM/YYYY"
                 allowClear={false}
                 value={dayjs(details.metDate)}
@@ -90,10 +92,10 @@ export function MetConditionsTab() {
         ]),
     {
       key: 'fatefulEncounter',
-      label: 'Fateful Encounter',
+      label: t('met.fatefulEncounter'),
       children: (
         <Switch
-          aria-label="Fateful Encounter"
+          aria-label={t('met.fatefulEncounter')}
           checked={details.fatefulEncounter}
           onChange={(fatefulEncounter) => submit({ fatefulEncounter })}
         />

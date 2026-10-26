@@ -3,6 +3,7 @@ import { App, Modal, Typography } from 'antd'
 import type { SaveSummary, TransferSummary } from '@pkhex-everywhere/engine'
 import { useEngine } from '@pkhex-everywhere/react'
 import { gameName } from '../../capabilities'
+import { useTranslation } from '../../i18n'
 import { FormatPickerModal } from '../load/FormatPickerModal'
 import { SaveFileDrop } from '../load/SaveFileDrop'
 import type { FormatChoice } from '../load/useLoadSave'
@@ -10,6 +11,7 @@ import { openTransfer } from './openTransfer'
 import { TransferPicker } from './TransferPicker'
 
 export function TransferModal({ game, onClose }: { game: SaveSummary; onClose: () => void }) {
+  const { t } = useTranslation()
   const engine = useEngine()
   const { notification } = App.useApp()
   const [formatChoice, setFormatChoice] = useState<FormatChoice>()
@@ -22,8 +24,16 @@ export function TransferModal({ game, onClose }: { game: SaveSummary; onClose: (
     else if (opening.kind === 'formatChoice')
       setFormatChoice({ file, candidates: opening.candidates, pkhexGame: opening.pkhexGame })
     else if (opening.kind === 'noRoute')
-      notification.error({ title: `Pokémon can't move from ${gameName(opening.partner)} to ${gameName(game)}.` })
-    else notification.error({ title: `'${file.name}' is not a supported save file.`, description: 'The file is not a valid save file.' })
+      notification.error({
+        title: t('transfer.noRoute', "Pokémon can't move from {0} to {1}.")
+          .replace('{0}', gameName(opening.partner))
+          .replace('{1}', gameName(game)),
+      })
+    else
+      notification.error({
+        title: `'${file.name}' ${t('transfer.notSupported', 'is not a supported save file.')}`,
+        description: t('transfer.invalidSave', 'The file is not a valid save file.'),
+      })
   }
 
   const chooseFormat = async (formatId: string) => {
@@ -49,13 +59,18 @@ export function TransferModal({ game, onClose }: { game: SaveSummary; onClose: (
     <>
       <Modal
         open
-        title="Transfer"
-        okText="Open save file..."
+        title={t('transfer.title', 'Transfer')}
+        okText={t('transfer.openSave', 'Open save file...')}
         onOk={() => fileInput.current?.click()}
         onCancel={close}
         modalRender={(content) => <SaveFileDrop onOpen={openSave}>{content}</SaveFileDrop>}
       >
-        <Typography.Paragraph>{`Open another ${gameName(game)} save to move its Pokémon into this one.`}</Typography.Paragraph>
+        <Typography.Paragraph>
+          {t('transfer.description', 'Open another {0} save to move its Pokémon into this one.').replace(
+            '{0}',
+            gameName(game),
+          )}
+        </Typography.Paragraph>
         <input ref={fileInput} type="file" hidden onChange={loadFile} />
       </Modal>
       {formatChoice && (

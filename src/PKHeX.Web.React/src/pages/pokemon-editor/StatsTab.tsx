@@ -4,20 +4,14 @@ import { draftHandle, type StatPatch, type StatValues } from '@pkhex-everywhere/
 import { useLoadedGame, useQuery } from '@pkhex-everywhere/react'
 import { gameName, statsAreApproximate } from '../../capabilities'
 import { PlugInActionButton } from '../../components/PlugInActionButton'
+import { useTranslation } from '../../i18n'
 import { useDraft } from './useDraft'
 
 type Stat = keyof StatValues
 
-const stats: { key: Stat; label: string }[] = [
-  { key: 'health', label: 'HP' },
-  { key: 'attack', label: 'Attack' },
-  { key: 'defense', label: 'Defense' },
-  { key: 'specialAttack', label: 'Special Attack' },
-  { key: 'specialDefense', label: 'Special Defense' },
-  { key: 'speed', label: 'Speed' },
-]
+const statKeys: Stat[] = ['health', 'attack', 'defense', 'specialAttack', 'specialDefense', 'speed']
 
-const total = (values: StatValues) => stats.reduce((sum, stat) => sum + values[stat.key], 0)
+const total = (values: StatValues) => statKeys.reduce((sum, key) => sum + values[key], 0)
 
 export function StatsTab() {
   const { details, submit } = useDraft()
@@ -25,6 +19,16 @@ export function StatsTab() {
   const actions = useQuery('plugins.actions', 'pokemonStats', draftHandle)
   const screens = Grid.useBreakpoint()
   const layout = screens.sm ? 'horizontal' : 'vertical'
+  const { t } = useTranslation()
+
+  const stats: { key: Stat; label: string }[] = [
+    { key: 'health', label: t('stats.hp', 'HP') },
+    { key: 'attack', label: t('stats.attack', 'Attack') },
+    { key: 'defense', label: t('stats.defense', 'Defense') },
+    { key: 'specialAttack', label: t('stats.spAtk', 'Special Attack') },
+    { key: 'specialDefense', label: t('stats.spDef', 'Special Defense') },
+    { key: 'speed', label: t('stats.speed', 'Speed') },
+  ]
 
   const inputs: { key: 'ivs' | 'evs' | 'avs'; label: string; values: StatValues | null }[] = [
     { key: 'ivs', label: 'IV', values: details.ivs },
@@ -33,7 +37,7 @@ export function StatsTab() {
   ]
 
   const statItems = (stat: { key: Stat; label: string }): DescriptionsProps['items'] => [
-    { key: 'stat', label: 'Stat', children: details.stats[stat.key] },
+    { key: 'stat', label: t('editor.stats.stat', 'Stat'), children: details.stats[stat.key] },
     ...inputs.flatMap(({ key, label, values }) =>
       values === null
         ? []
@@ -55,7 +59,7 @@ export function StatsTab() {
   ]
 
   const totalItems: DescriptionsProps['items'] = [
-    { key: 'stat', label: 'Stat', children: total(details.stats) },
+    { key: 'stat', label: t('editor.stats.stat', 'Stat'), children: total(details.stats) },
     ...inputs.flatMap(({ key, label, values }) => (values === null ? [] : [{ key, label, children: total(values) }])),
   ]
 
@@ -71,18 +75,18 @@ export function StatsTab() {
       {stats.map((stat) => (
         <Descriptions key={stat.key} bordered size="small" layout={layout} title={stat.label} items={statItems(stat)} />
       ))}
-      <Descriptions bordered size="small" layout={layout} title="Total" items={totalItems} />
+      <Descriptions bordered size="small" layout={layout} title={t('stats.total', 'Total')} items={totalItems} />
       {details.hiddenPower && (
         <Descriptions
           bordered
           size="small"
           layout={layout}
-          title="Hidden Power"
+          title={t('editor.stats.hiddenPower', 'Hidden Power')}
           items={[
-            { key: 'type', label: 'Type', children: details.hiddenPower.type },
+            { key: 'type', label: t('editor.stats.type', 'Type'), children: details.hiddenPower.type },
             ...(details.hiddenPower.power === null
               ? []
-              : [{ key: 'power', label: 'Power', children: details.hiddenPower.power }]),
+              : [{ key: 'power', label: t('editor.stats.power', 'Power'), children: details.hiddenPower.power }]),
           ]}
         />
       )}
@@ -91,7 +95,7 @@ export function StatsTab() {
           bordered
           size="small"
           layout={layout}
-          title="Extra"
+          title={t('editor.stats.extra', 'Extra')}
           items={[
             {
               key: 'combatPower',
@@ -104,7 +108,9 @@ export function StatsTab() {
                     value={details.combatPower}
                     onChange={(combatPower) => combatPower !== null && submit({ combatPower })}
                   />
-                  <Button onClick={() => submit({ combatPower: details.calculatedCombatPower })}>Re-calculate</Button>
+                  <Button onClick={() => submit({ combatPower: details.calculatedCombatPower })}>
+                    {t('editor.stats.recalculate', 'Re-calculate')}
+                  </Button>
                 </Space>
               ),
             },

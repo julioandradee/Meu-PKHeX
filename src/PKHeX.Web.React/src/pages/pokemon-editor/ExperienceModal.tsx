@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Flex, InputNumber, Modal, Slider, Typography } from 'antd'
+import { useTranslation } from '../../i18n'
 import { useDraft } from './useDraft'
 
 interface ExperienceModalProps {
@@ -39,6 +40,7 @@ function ExperienceFields({ min, max, initial, disabled, onChange }: ExperienceF
 }
 
 export function ExperienceModal({ onClose }: ExperienceModalProps) {
+  const { t } = useTranslation()
   const { details, submit } = useDraft()
   const { min, max } = details.experienceRange
   const experience = useRef(details.experience)
@@ -50,7 +52,7 @@ export function ExperienceModal({ onClose }: ExperienceModalProps) {
   }
 
   return (
-    <Modal open title="EXP" okText="Save" onOk={handleOk} onCancel={onClose}>
+    <Modal open title={t('editor.expModalTitle')} okText={t('actions.save')} onOk={handleOk} onCancel={onClose}>
       <Flex vertical gap={12}>
         <ExperienceFields
           min={min}
@@ -61,8 +63,8 @@ export function ExperienceModal({ onClose }: ExperienceModalProps) {
         />
         <Typography.Text type="secondary">
           {atMaxLevel
-            ? 'Level 100 is the most EXP this Pokémon can have.'
-            : `Level ${details.level} runs from ${min} to ${max} EXP. Change the level to go beyond that.`}
+            ? t('editor.expMaxNotice')
+            : `Level ${details.level}: ${min} - ${max} EXP.`}
         </Typography.Text>
       </Flex>
     </Modal>

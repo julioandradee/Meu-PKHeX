@@ -6,7 +6,6 @@ export const routes = {
   party: '/party',
   items: '/items',
   events: '/events',
-  analytics: '/analytics',
   save: '/save',
   settings: '/settings',
   credits: '/credits',

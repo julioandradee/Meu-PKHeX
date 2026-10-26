@@ -2,7 +2,7 @@ import type { InstalledPlugIn, SaveSummary } from '@pkhex-everywhere/engine'
 import { supports } from '../capabilities'
 import { routes } from '../routes'
 
-export type MenuIcon = 'home' | 'team' | 'inbox' | 'shop' | 'flag' | 'api' | 'line-chart' | 'save'
+export type MenuIcon = 'home' | 'team' | 'inbox' | 'shop' | 'flag' | 'api' | 'save'
 
 export interface MenuEntry {
   route: string
@@ -34,7 +34,6 @@ export function menuEntries(
         ]
       : []),
     { route: routes.plugIns, label: t('menu.plugins', 'Plug-Ins'), icon: 'api', ...(plugIns.length && { children: plugIns }) },
-    { route: routes.analytics, label: t('menu.analytics', 'Analytics'), icon: 'line-chart' },
     { route: routes.save, label: t('menu.save', 'Save'), icon: 'save' },
   ]
 }

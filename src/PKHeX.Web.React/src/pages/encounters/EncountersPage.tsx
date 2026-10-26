@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/PageHeader'
 import { SpeciesSelect } from '../../components/SpeciesSelect'
 import { VersionSelect } from '../../components/VersionSelect'
 import { useNavigate } from '../../host'
+import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
 
 interface EncountersPageProps {
@@ -15,6 +16,7 @@ interface EncountersPageProps {
 }
 
 export default function EncountersPage(props: EncountersPageProps) {
+  const { t } = useTranslation()
   const { versions, default: defaultVersion } = useQuery('encounters.versions')
   const allSpecies = useQuery('species.list')
   const navigate = useNavigate()
@@ -23,7 +25,7 @@ export default function EncountersPage(props: EncountersPageProps) {
 
   return (
     <Flex vertical gap={20}>
-      <PageHeader title="Encounters" />
+      <PageHeader title={t('encounters.title', 'Encounters')} />
       <Flex gap="small" wrap>
         <div style={{ flex: '1 1 160px' }}>
           <VersionSelect
@@ -48,6 +50,7 @@ export default function EncountersPage(props: EncountersPageProps) {
 }
 
 function Encounters({ version, species }: { version: number; species: number }) {
+  const { t } = useTranslation()
   const encounters = useQuery('encounters.search', version, species)
   const engine = useEngine()
   const navigate = useNavigate()
@@ -60,11 +63,11 @@ function Encounters({ version, species }: { version: number; species: number }) 
       // The query cache can serve an earlier search, so search again to make the Session hold these rows.
       await engine.encounters.search(version, species)
       const added = await engine.box.addEncounter(encounter.index)
-      notification.success({ title: `${encounter.species} added to your box` })
+      notification.success({ title: `${encounter.species} ${t('encounters.addedSuccess', 'added to your box')}` })
       navigate(routes.pokemon(added))
     } catch (error) {
       if (!(error instanceof EngineError)) throw error
-      notification.error({ title: "Couldn't add the Pokémon", description: error.message })
+      notification.error({ title: t('encounters.addError', "Couldn't add the Pokémon"), description: error.message })
     } finally {
       setAdding(undefined)
     }

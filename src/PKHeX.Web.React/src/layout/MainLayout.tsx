@@ -4,7 +4,6 @@ import {
   FlagOutlined,
   HomeOutlined,
   InboxOutlined,
-  LineChartOutlined,
   SaveOutlined,
   SettingOutlined,
   ShopOutlined,
@@ -28,7 +27,6 @@ const icons: Record<MenuIcon, ReactNode> = {
   shop: <ShopOutlined />,
   flag: <FlagOutlined />,
   api: <ApiOutlined />,
-  'line-chart': <LineChartOutlined />,
   save: <SaveOutlined />,
 }
 

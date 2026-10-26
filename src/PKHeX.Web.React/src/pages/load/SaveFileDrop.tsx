@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { InboxOutlined } from '@ant-design/icons'
 import { Modal, Typography, theme } from 'antd'
+import { useTranslation } from '../../i18n'
 
 interface SaveFileDropProps {
   onOpen: (file: File) => void
@@ -9,6 +10,7 @@ interface SaveFileDropProps {
 }
 
 export function SaveFileDrop({ onOpen, disabled = false, children }: SaveFileDropProps) {
+  const { t } = useTranslation()
   const [dragging, setDragging] = useState(false)
   const depth = useRef(0)
   const { token } = theme.useToken()
@@ -61,11 +63,11 @@ export function SaveFileDrop({ onOpen, disabled = false, children }: SaveFileDro
       {children}
       {/* Inside this element, dragging over the overlay doesn't count as leaving the drop area. */}
       {dragging && (
-        <Modal open centered title="Drop to open save" footer={null} closable={false} keyboard={false} getContainer={false}>
+        <Modal open centered title={t('load.dropModalTitle')} footer={null} closable={false} keyboard={false} getContainer={false}>
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <InboxOutlined aria-hidden style={{ fontSize: 48, color: token.colorPrimary }} />
             <Typography.Paragraph style={{ marginTop: 20, marginBottom: 0 }}>
-              Drop your save file here.
+              {t('load.dropModalText')}
             </Typography.Paragraph>
           </div>
         </Modal>

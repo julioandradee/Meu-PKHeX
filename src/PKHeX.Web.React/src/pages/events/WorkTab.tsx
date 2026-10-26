@@ -2,21 +2,23 @@ import { useState } from 'react'
 import { Flex, InputNumber, Select, Table, type TableColumnsType } from 'antd'
 import type { EventWork, SaveEvents } from '@pkhex-everywhere/engine'
 import { useEvents } from '@pkhex-everywhere/react'
+import { useTranslation } from '../../i18n'
 import { humanize, useEventFilters } from './useEventFilters'
 import { useEventEdit } from './useEventEdit'
 
 export function WorkTab({ events }: { events: SaveEvents }) {
+  const { t } = useTranslation()
   const { filtered, filters } = useEventFilters(events.work)
 
   const columns: TableColumnsType<EventWork> = [
     { title: '#', dataIndex: 'index', width: 80 },
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Category', dataIndex: 'category', render: humanize },
+    { title: t('table.name', 'Name'), dataIndex: 'name' },
+    { title: t('events.flags.category', 'Category'), dataIndex: 'category', render: humanize },
     {
-      title: 'Value',
+      title: t('events.work.value', 'Value'),
       key: 'value',
       width: 220,
-      render: (_, work) => <WorkValue key={`${work.index}-${work.value}`} work={work} min={events.workMin} max={events.workMax} />,
+      render: (_: unknown, work: EventWork) => <WorkValue key={`${work.index}-${work.value}`} work={work} min={events.workMin} max={events.workMax} />,
     },
   ]
 
@@ -36,6 +38,7 @@ export function WorkTab({ events }: { events: SaveEvents }) {
 }
 
 function WorkValue({ work, min, max }: { work: EventWork; min: number; max: number }) {
+  const { t } = useTranslation()
   const { setWork } = useEvents()
   const edit = useEventEdit()
   const [draft, setDraft] = useState<number | null>(work.value)
@@ -60,7 +63,7 @@ function WorkValue({ work, min, max }: { work: EventWork; min: number; max: numb
 
   const options = work.options.some((option) => option.value === work.value)
     ? work.options
-    : [{ name: `Other (${work.value})`, value: work.value }, ...work.options]
+    : [{ name: `${t('trainer.other', 'Other')} (${work.value})`, value: work.value }, ...work.options]
 
   return (
     <Select

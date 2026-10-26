@@ -4,6 +4,7 @@ import type { DescriptionsProps } from 'antd'
 import { draftHandle, type PokemonGender } from '@pkhex-everywhere/engine'
 import { useQuery } from '@pkhex-everywhere/react'
 import { ItemSelect } from '../../components/ItemSelect'
+import { useTranslation } from '../../i18n'
 import { ChoiceSelect } from './ChoiceSelect'
 import { ExperienceModal } from './ExperienceModal'
 import { isLocked } from './locked'
@@ -25,18 +26,19 @@ export function DescriptionTab() {
   const languages = useQuery('game.languages')
   const screens = Grid.useBreakpoint()
   const [editingExperience, setEditingExperience] = useState(false)
+  const { t } = useTranslation()
 
   const items: DescriptionsProps['items'] = [
     {
       key: 'species',
-      label: 'Species',
+      label: t('editor.fields.species', 'Species'),
       children: (
-        <ChoiceSelect label="Species" choices={options.species} value={details.species} onChange={(species) => submit({ species })} />
+        <ChoiceSelect label={t('editor.fields.species', 'Species')} choices={options.species} value={details.species} onChange={(species) => submit({ species })} />
       ),
     },
     {
       key: 'types',
-      label: 'Types',
+      label: t('editor.fields.types', 'Types'),
       children: (
         <Space size={5} wrap>
           {details.types.map((type) => (
@@ -52,7 +54,7 @@ export function DescriptionTab() {
     },
     {
       key: 'nickname',
-      label: 'Nickname',
+      label: t('editor.fields.nickname', 'Nickname'),
       children: (
         <Typography.Text editable={{ text: details.nickname, onChange: (nickname) => submit({ nickname }) }}>
           {details.nickname}
@@ -61,10 +63,10 @@ export function DescriptionTab() {
     },
     {
       key: 'gender',
-      label: 'Gender',
+      label: t('editor.fields.gender', 'Gender'),
       children: (
         <Radio.Group
-          aria-label="Gender"
+          aria-label={t('editor.fields.gender', 'Gender')}
           optionType="button"
           buttonStyle="solid"
           value={details.gender}
@@ -76,32 +78,32 @@ export function DescriptionTab() {
     },
     {
       key: 'shiny',
-      label: 'Shiny',
-      children: <Switch aria-label="Shiny" checked={details.isShiny} onChange={(isShiny) => submit({ isShiny })} />,
+      label: t('editor.fields.shiny', 'Shiny'),
+      children: <Switch aria-label={t('editor.fields.shiny', 'Shiny')} checked={details.isShiny} onChange={(isShiny) => submit({ isShiny })} />,
     },
     ...(details.isAlpha === null
       ? []
       : [
           {
             key: 'alpha',
-            label: 'Alpha',
-            children: <Switch aria-label="Alpha" checked={details.isAlpha} onChange={(isAlpha: boolean) => submit({ isAlpha })} />,
+            label: t('editor.fields.alpha', 'Alpha'),
+            children: <Switch aria-label={t('editor.fields.alpha', 'Alpha')} checked={details.isAlpha} onChange={(isAlpha: boolean) => submit({ isAlpha })} />,
           },
         ]),
     {
       key: 'level',
-      label: 'Level',
+      label: t('editor.fields.level', 'Level'),
       children: (
         <Space>
           <InputNumber
-            aria-label="Level"
+            aria-label={t('editor.fields.level', 'Level')}
             min={1}
             max={100}
             value={details.level}
             onChange={(level) => level !== null && submit({ level })}
           />
           <Button type="link" size="small" onClick={() => setEditingExperience(true)}>
-            Edit EXP
+            {t('editor.fields.editExp', 'Edit EXP')}
           </Button>
         </Space>
       ),
@@ -111,10 +113,10 @@ export function DescriptionTab() {
       : [
           {
             key: 'nature',
-            label: 'Nature',
+            label: t('editor.fields.nature', 'Nature'),
             children: (
               <ChoiceSelect
-                label="Nature"
+                label={t('editor.fields.nature', 'Nature')}
                 choices={natures}
                 value={details.nature}
                 disabled={isLocked(options, 'nature')}
@@ -128,8 +130,8 @@ export function DescriptionTab() {
       : [
           {
             key: 'form',
-            label: 'Form',
-            children: <ChoiceSelect label="Form" choices={options.forms} value={details.form} onChange={(form) => submit({ form })} />,
+            label: t('editor.fields.form', 'Form'),
+            children: <ChoiceSelect label={t('editor.fields.form', 'Form')} choices={options.forms} value={details.form} onChange={(form) => submit({ form })} />,
           },
         ]),
     ...(options.heldItems.length <= 1
@@ -137,11 +139,11 @@ export function DescriptionTab() {
       : [
           {
             key: 'heldItem',
-            label: 'Held Item',
+            label: t('editor.fields.heldItem', 'Held Item'),
             children: (
               <ItemSelect
                 items={options.heldItems}
-                label="Held Item"
+                label={t('editor.fields.heldItem', 'Held Item')}
                 value={details.heldItem}
                 onChange={(item) => submit({ heldItem: item.id })}
               />
@@ -153,10 +155,10 @@ export function DescriptionTab() {
       : [
           {
             key: 'ability',
-            label: 'Ability',
+            label: t('editor.fields.ability', 'Ability'),
             children: (
               <ChoiceSelect
-                label="Ability"
+                label={t('editor.fields.ability', 'Ability')}
                 choices={options.abilities}
                 value={details.ability}
                 disabled={isLocked(options, 'ability')}
@@ -170,16 +172,16 @@ export function DescriptionTab() {
       : [
           {
             key: 'ball',
-            label: 'Ball',
-            children: <ItemSelect items={balls} label="Ball" value={details.ball} onChange={(ball) => submit({ ball: ball.id })} />,
+            label: t('editor.fields.ball', 'Ball'),
+            children: <ItemSelect items={balls} label={t('editor.fields.ball', 'Ball')} value={details.ball} onChange={(ball) => submit({ ball: ball.id })} />,
           },
         ]),
     {
       key: 'friendship',
-      label: details.isEgg ? 'Hatch Counter' : 'Friendship',
+      label: details.isEgg ? t('editor.fields.hatchCounter', 'Hatch Counter') : t('editor.fields.friendship', 'Friendship'),
       children: (
         <InputNumber
-          aria-label={details.isEgg ? 'Hatch Counter' : 'Friendship'}
+          aria-label={details.isEgg ? t('editor.fields.hatchCounter', 'Hatch Counter') : t('editor.fields.friendship', 'Friendship')}
           min={0}
           max={255}
           value={details.friendship}
@@ -192,10 +194,10 @@ export function DescriptionTab() {
       : [
           {
             key: 'language',
-            label: 'Language',
+            label: t('editor.fields.language', 'Language'),
             children: (
               <ChoiceSelect
-                label="Language"
+                label={t('editor.fields.language', 'Language')}
                 choices={languages}
                 value={details.language}
                 onChange={(language) => submit({ language })}
@@ -205,18 +207,18 @@ export function DescriptionTab() {
         ]),
     {
       key: 'egg',
-      label: 'Egg',
-      children: <Switch aria-label="Egg" checked={details.isEgg} onChange={(isEgg) => submit({ isEgg })} />,
+      label: t('editor.fields.egg', 'Egg'),
+      children: <Switch aria-label={t('editor.fields.egg', 'Egg')} checked={details.isEgg} onChange={(isEgg) => submit({ isEgg })} />,
     },
     {
       key: 'infected',
-      label: 'Infected',
-      children: <Switch aria-label="Infected" disabled checked={details.isInfected} />,
+      label: t('editor.fields.infected', 'Infected'),
+      children: <Switch aria-label={t('editor.fields.infected', 'Infected')} disabled checked={details.isInfected} />,
     },
     {
       key: 'cured',
-      label: 'Cured',
-      children: <Switch aria-label="Cured" disabled checked={details.isCured} />,
+      label: t('editor.fields.cured', 'Cured'),
+      children: <Switch aria-label={t('editor.fields.cured', 'Cured')} disabled checked={details.isCured} />,
     },
   ]
 

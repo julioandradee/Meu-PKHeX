@@ -1,10 +1,12 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Modal, Select } from 'antd'
 import { useQuery } from '@pkhex-everywhere/react'
+import { useTranslation } from '../../i18n'
 import { SaveFileDrop } from './SaveFileDrop'
 import { useLoadSave } from './useLoadSave'
 
 export function LoadRomHackModal({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation()
   const formats = useQuery('game.formats')
   const { openFile } = useLoadSave()
   const [formatId, setFormatId] = useState<string>()
@@ -23,8 +25,8 @@ export function LoadRomHackModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal
       open
-      title="Load ROM Hack"
-      okText="Open save file..."
+      title={t('load.loadRomHack', 'Load ROM Hack')}
+      okText={t('load.openSaveFile', 'Open save file...')}
       onOk={() => fileInput.current?.click()}
       onCancel={onClose}
       okButtonProps={{ disabled: !formatId }}
@@ -32,8 +34,8 @@ export function LoadRomHackModal({ onClose }: { onClose: () => void }) {
     >
       <Select
         showSearch={{ optionFilterProp: 'label' }}
-        placeholder="Search ROM hacks"
-        aria-label="ROM hack"
+        placeholder={t('load.romHacks.search', 'Search ROM hacks')}
+        aria-label={t('load.romHacks.aria', 'ROM hack')}
         options={formats.map((format) => ({ value: format.id, label: format.name }))}
         value={formatId}
         onChange={setFormatId}

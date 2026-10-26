@@ -27,12 +27,12 @@ const plugIn = (id: string, needsReinstall = false): InstalledPlugIn => ({
 const labels = (entries: ReturnType<typeof menuEntries>) => entries.map((entry) => entry.label)
 
 describe('menuEntries', () => {
-  it('shows only Home, Plug-Ins, Analytics and Save without a save', () => {
-    expect(labels(menuEntries(null, []))).toEqual(['Home', 'Plug-Ins', 'Analytics', 'Save'])
+  it('shows only Home, Plug-Ins and Save without a save', () => {
+    expect(labels(menuEntries(null, []))).toEqual(['Home', 'Plug-Ins', 'Save'])
   })
 
   it('shows Party, Pokemon Box and Items with a save', () => {
-    expect(labels(menuEntries(save(false), []))).toEqual(['Home', 'Party', 'Pokemon Box', 'Items', 'Plug-Ins', 'Analytics', 'Save'])
+    expect(labels(menuEntries(save(false), []))).toEqual(['Home', 'Party', 'Pokemon Box', 'Items', 'Plug-Ins', 'Save'])
   })
 
   it('shows Events when the save has events', () => {
@@ -43,7 +43,6 @@ describe('menuEntries', () => {
       'Items',
       'Events',
       'Plug-Ins',
-      'Analytics',
       'Save',
     ])
   })

@@ -1,5 +1,6 @@
 import { Button, Table, type TableColumnsType } from 'antd'
 import type { OwnedItem } from '@pkhex-everywhere/engine'
+import { useTranslation } from '../i18n'
 import { ItemIcon } from './ItemIcon'
 import { NumberFilter } from './filters/NumberFilter'
 import { containsText } from './filters/containsText'
@@ -11,6 +12,8 @@ interface ItemsTableProps {
 }
 
 export function ItemsTable({ items, onEdit }: ItemsTableProps) {
+  const { t } = useTranslation()
+
   const columns: TableColumnsType<OwnedItem> = [
     {
       key: 'icon',
@@ -18,25 +21,25 @@ export function ItemsTable({ items, onEdit }: ItemsTableProps) {
       render: (_, item) => !item.isUnknown && <ItemIcon name={item.name} />,
     },
     {
-      title: 'Name',
+      title: t('table.name'),
       dataIndex: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
-      filterDropdown: (props) => <TextFilter {...props} placeholder="Name" />,
+      filterDropdown: (props) => <TextFilter {...props} placeholder={t('table.name')} />,
       onFilter: (value, item) => containsText(item.name, value),
     },
     {
-      title: 'Amount',
+      title: t('table.amount'),
       dataIndex: 'count',
       sorter: (a, b) => a.count - b.count,
-      filterDropdown: (props) => <NumberFilter {...props} placeholder="Amount" min={0} />,
+      filterDropdown: (props) => <NumberFilter {...props} placeholder={t('table.amount')} min={0} />,
       onFilter: (value, item) => item.count === value,
     },
     {
-      title: 'Action',
+      title: t('table.action'),
       key: 'action',
       render: (_, item) => (
         <Button type="link" onClick={() => onEdit(item)}>
-          Edit
+          {t('actions.edit')}
         </Button>
       ),
     },

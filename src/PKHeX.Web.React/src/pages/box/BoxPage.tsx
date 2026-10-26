@@ -1,5 +1,6 @@
-import { useRef, useState, type ChangeEvent } from 'react'
-import { App, Flex } from 'antd'
+import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { SearchOutlined } from '@ant-design/icons'
+import { App, Flex, Input, Select } from 'antd'
 import type { PokemonSummary } from '@pkhex-everywhere/engine'
 import { useBox, useEngine, useLoadedGame } from '@pkhex-everywhere/react'
 import { ButtonOrMenu } from '../../components/ButtonOrMenu'
@@ -8,9 +9,10 @@ import { PokemonTable } from '../../components/PokemonTable'
 import { useCopyShowdown } from '../../hooks/useCopyShowdown'
 import { useSupports } from '../../hooks/useSupports'
 import { openCalculator, useNavigate } from '../../host'
+import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
 import { boxActions } from './boxActions'
-import { boxColumns } from './boxColumns'
+import { getBoxColumns } from './boxColumns'
 import { TransferModal } from './TransferModal'
 import { useLoadPokemonFile } from './useLoadPokemonFile'
 
@@ -27,10 +29,78 @@ export default function BoxPage() {
   const { notification } = App.useApp()
   const loadPokemonFile = useLoadPokemonFile()
   const fileInput = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation()
+
   const [selectedKeys, setSelectedKeys] = useState<string[]>([])
   const [transferring, setTransferring] = useState(false)
+  const [search, setSearch] = useState('')
+  const [boxFilter, setBoxFilter] = useState<string>('all')
+  const [levelFilter, setLevelFilter] = useState<string>('all')
 
-  const selected = box.filter((pokemon) => selectedKeys.includes(selectionKey(pokemon)))
+  const boxOptions = useMemo(() => {
+    const boxSet = new Set<number>()
+    for (const p of box) {
+      if (typeof p.at.box === 'number') {
+        boxSet.add(p.at.box + 1)
+      }
+    }
+    const maxBox = Math.max(1, ...boxSet)
+    const options = [{ value: 'all', label: t('box.allBoxes', 'Todas as Caixas') }]
+    for (let i = 1; i <= maxBox; i++) {
+      const count = box.filter((p) => (p.at.box ?? 0) + 1 === i).length
+      options.push({
+        value: String(i),
+        label: `${t('box.boxLabel', 'Caixa')} ${i}${count > 0 ? ` (${count})` : ''}`,
+      })
+    }
+    return options
+  }, [box, t])
+
+  const levelOptions = useMemo(
+    () => [
+      { value: 'all', label: t('box.allLevels', 'Todos os Níveis') },
+      { value: '1-10', label: `${t('box.levelPrefix', 'Lvl')} 1 - 10` },
+      { value: '11-20', label: `${t('box.levelPrefix', 'Lvl')} 11 - 20` },
+      { value: '21-30', label: `${t('box.levelPrefix', 'Lvl')} 21 - 30` },
+      { value: '31-40', label: `${t('box.levelPrefix', 'Lvl')} 31 - 40` },
+      { value: '41-50', label: `${t('box.levelPrefix', 'Lvl')} 41 - 50` },
+      { value: '+50', label: `${t('box.levelPrefix', 'Lvl')} +50` },
+    ],
+    [t],
+  )
+
+  const filteredBox = useMemo(() => {
+    return box.filter((pokemon) => {
+      // 1. Text search (species / nickname)
+      const q = search.trim().toLowerCase()
+      if (q) {
+        const matchesSpecies = pokemon.species.toLowerCase().includes(q)
+        const matchesNickname = pokemon.nickname ? pokemon.nickname.toLowerCase().includes(q) : false
+        if (!matchesSpecies && !matchesNickname) return false
+      }
+
+      // 2. Box filter
+      if (boxFilter !== 'all') {
+        const targetBox = Number(boxFilter)
+        if ((pokemon.at.box ?? 0) + 1 !== targetBox) return false
+      }
+
+      // 3. Level filter
+      if (levelFilter !== 'all') {
+        const lvl = pokemon.level
+        if (levelFilter === '1-10' && (lvl < 1 || lvl > 10)) return false
+        if (levelFilter === '11-20' && (lvl < 11 || lvl > 20)) return false
+        if (levelFilter === '21-30' && (lvl < 21 || lvl > 30)) return false
+        if (levelFilter === '31-40' && (lvl < 31 || lvl > 40)) return false
+        if (levelFilter === '41-50' && (lvl < 41 || lvl > 50)) return false
+        if (levelFilter === '+50' && lvl <= 50) return false
+      }
+
+      return true
+    })
+  }, [box, search, boxFilter, levelFilter])
+
+  const selected = filteredBox.filter((pokemon) => selectedKeys.includes(selectionKey(pokemon)))
 
   const openSelectedInCalculator = async () => {
     const showdown = selected.length
@@ -41,7 +111,7 @@ export default function BoxPage() {
 
   const copyBoxShowdown = async () => {
     if (box.length === 0) {
-      notification.error({ title: 'No Pokémon found in your box' })
+      notification.error({ title: t('box.noPokemon', 'No Pokémon found in your box') })
       return
     }
     await copyShowdown(await engine.box.showdown(), `${box.length} entries`)
@@ -56,9 +126,29 @@ export default function BoxPage() {
   return (
     <Flex vertical gap={20}>
       <PageHeader
-        title="Box"
+        title={t('box.title', 'Box')}
         extra={
-          <>
+          <Flex align="center" gap={10} wrap="wrap">
+            <Input
+              prefix={<SearchOutlined style={{ color: '#8c8c8c' }} />}
+              placeholder={t('box.searchPlaceholder', 'Buscar Pokémon...')}
+              allowClear
+              style={{ width: 190 }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Select
+              value={boxFilter}
+              onChange={setBoxFilter}
+              options={boxOptions}
+              style={{ minWidth: 155 }}
+            />
+            <Select
+              value={levelFilter}
+              onChange={setLevelFilter}
+              options={levelOptions}
+              style={{ minWidth: 135 }}
+            />
             <ButtonOrMenu
               actions={boxActions(
                 { encounters: encountersSupported, showdown: showdownSupported },
@@ -69,17 +159,19 @@ export default function BoxPage() {
                   showdown: copyBoxShowdown,
                   transfer: () => setTransferring(true),
                 },
+                t,
               )}
             />
             <input ref={fileInput} type="file" hidden onChange={loadFile} />
-          </>
+          </Flex>
         }
       />
       <PokemonTable
-        pokemon={box}
-        extraColumns={boxColumns}
+        pokemon={filteredBox}
+        extraColumns={getBoxColumns(t)}
         selected={selected}
         onSelectedChange={(rows) => setSelectedKeys(rows.map(selectionKey))}
+        pageSize={50}
       />
       {transferring && game && <TransferModal game={game} onClose={() => setTransferring(false)} />}
     </Flex>

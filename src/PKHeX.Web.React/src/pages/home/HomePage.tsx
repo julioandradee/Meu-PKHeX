@@ -5,6 +5,7 @@ import { useLoadedGame, useQuery, useTrainer } from '@pkhex-everywhere/react'
 import { AdSlot } from '../../components/AdSlot'
 import { PlugInActionButton } from '../../components/PlugInActionButton'
 import { TrainerGenderRadio } from '../../components/TrainerGenderRadio'
+import { useTranslation } from '../../i18n'
 
 const multiplexAdSlot = '7470710144'
 const maxMoney = 999_999
@@ -23,6 +24,7 @@ export default function HomePage() {
 }
 
 function TrainerCard() {
+  const { t } = useTranslation()
   const { trainer, setName, setGender, setMoney, setBattlePoints } = useTrainer()
   const edit = useTrainerEdit()
   const [name, setNameDraft] = useState<string | null>(null)
@@ -35,7 +37,7 @@ function TrainerCard() {
 
   return (
     <Descriptions
-      title="Trainer"
+      title={t('trainer.title')}
       bordered
       size="small"
       column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
@@ -43,7 +45,7 @@ function TrainerCard() {
         { key: 'id', label: 'TID/SID', children: trainer.id },
         {
           key: 'name',
-          label: 'Name',
+          label: t('trainer.name'),
           children: (
             <Input
               value={name ?? trainer.name}
@@ -51,7 +53,7 @@ function TrainerCard() {
               onBlur={commitName}
               onPressEnter={commitName}
               maxLength={trainer.maxNameLength}
-              placeholder="Name"
+              placeholder={t('trainer.name')}
               style={{ width: '100%', maxWidth: 170 }}
             />
           ),
@@ -61,7 +63,7 @@ function TrainerCard() {
           : [
               {
                 key: 'gender',
-                label: 'Gender',
+                label: t('trainer.gender'),
                 children: (
                   <TrainerGenderRadio value={trainer.gender} onChange={(gender) => edit(() => setGender(gender))} />
                 ),
@@ -69,10 +71,10 @@ function TrainerCard() {
             ]),
         {
           key: 'cash',
-          label: 'Cash',
+          label: t('trainer.cash'),
           children: (
             <InputNumber<number>
-              aria-label="Cash"
+              aria-label={t('trainer.cash')}
               value={money.value ?? 0}
               onChange={money.onChange}
               onBlur={money.onBlur}
@@ -91,10 +93,10 @@ function TrainerCard() {
           : [
               {
                 key: 'battlePoints',
-                label: 'Battle Points',
+                label: t('trainer.battlePoints'),
                 children: (
                   <InputNumber<number>
-                    aria-label="Battle Points"
+                    aria-label={t('trainer.battlePoints')}
                     value={battlePoints.value}
                     onChange={battlePoints.onChange}
                     onBlur={battlePoints.onBlur}
@@ -106,19 +108,20 @@ function TrainerCard() {
                 ),
               },
             ]),
-        { key: 'rival', label: 'Rival', children: trainer.rival },
+        { key: 'rival', label: t('home.rival', 'Rival'), children: trainer.rival },
       ]}
     />
   )
 }
 
 function QuickActions() {
+  const { t } = useTranslation()
   const actions = useQuery('plugins.actions', 'quick', null)
   if (actions.length === 0) return null
 
   return (
     <Flex vertical align="center" gap={20} style={{ marginTop: 20 }}>
-      <Typography.Title level={1}>Quick Actions</Typography.Title>
+      <Typography.Title level={1}>{t('home.quickActions', 'Quick Actions')}</Typography.Title>
       <Space wrap size={20} align="center">
         {actions.map((action) => (
           <PlugInActionButton key={action.id} action={action} />
@@ -142,6 +145,7 @@ function useDraft<T>(value: T, commit: (next: T) => unknown) {
 }
 
 function useTrainerEdit() {
+  const { t } = useTranslation()
   const { notification } = App.useApp()
 
   return async (edit: () => Promise<void>) => {
@@ -149,7 +153,7 @@ function useTrainerEdit() {
       await edit()
     } catch (error) {
       if (!(error instanceof EngineError) || (error.code !== 'out-of-range' && error.code !== 'not-in-game')) throw error
-      notification.error({ title: "Couldn't change the trainer", description: error.message })
+      notification.error({ title: t('home.changeTrainerError', "Couldn't change the trainer"), description: error.message })
     }
   }
 }

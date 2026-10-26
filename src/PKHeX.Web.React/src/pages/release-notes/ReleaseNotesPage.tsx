@@ -1,5 +1,6 @@
 import { Tag, Typography } from 'antd'
 import { settings } from '../../host'
+import { useTranslation } from '../../i18n'
 import { news } from '../../news'
 
 interface ReleaseNotesPageProps {
@@ -7,14 +8,15 @@ interface ReleaseNotesPageProps {
 }
 
 export default function ReleaseNotesPage({ since: sinceQuery }: ReleaseNotesPageProps) {
+  const { t } = useTranslation()
   const since = sinceQuery ?? settings.readLastDateNewsSeen()
   return (
     <Typography>
-      <h1>Release Notes</h1>
+      <h1>{t('common.releaseNotes', 'Release Notes')}</h1>
       {news.map((entry) => (
         <section key={entry.date}>
           <h2>
-            {entry.date} {since && entry.date > since && <Tag color="green">new</Tag>}
+            {entry.date} {since && entry.date > since && <Tag color="green">{t('releaseNotes.new', 'new')}</Tag>}
           </h2>
           <ul>
             {entry.items.map((item) => (

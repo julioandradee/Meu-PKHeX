@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Descriptions, Flex, Grid, Input, InputNumber, Radio } from 'antd'
 import type { PokemonHandler } from '@pkhex-everywhere/engine'
 import { TrainerGenderRadio } from '../../components/TrainerGenderRadio'
+import { useTranslation } from '../../i18n'
 import { useDraft } from './useDraft'
 
 const columns = { xs: 1, sm: 2, md: 3 }
 const maxId = 4_294_967_295
 
 export function TrainerTab() {
+  const { t } = useTranslation()
   const { details, submit } = useDraft()
   const layout = Grid.useBreakpoint().sm ? 'horizontal' : 'vertical'
   const handledBy = (handler: PokemonHandler) => details.currentHandler === handler
@@ -22,7 +24,7 @@ export function TrainerTab() {
         items={[
           {
             key: 'handler',
-            label: 'Handler',
+            label: t('trainer.handler'),
             children: (
               <Radio.Group
                 optionType="button"
@@ -31,7 +33,7 @@ export function TrainerTab() {
                 onChange={(event) => submit({ currentHandler: event.target.value as PokemonHandler })}
                 options={[
                   { value: 'originalTrainer', label: 'OT' },
-                  { value: 'handlingTrainer', label: 'Other' },
+                  { value: 'handlingTrainer', label: t('trainer.other') },
                 ]}
               />
             ),
@@ -39,7 +41,7 @@ export function TrainerTab() {
         ]}
       />
       <Descriptions
-        title={handledBy('originalTrainer') ? 'Original Trainer ✅' : 'Original Trainer'}
+        title={handledBy('originalTrainer') ? `${t('trainer.originalTrainer')} ✅` : t('trainer.originalTrainer')}
         bordered
         size="small"
         layout={layout}
@@ -77,9 +79,10 @@ export function TrainerTab() {
           },
           {
             key: 'name',
-            label: 'Name',
+            label: t('trainer.name'),
             children: (
               <NameInput
+                placeholder={t('trainer.name')}
                 value={details.originalTrainerName}
                 onCommit={(originalTrainerName) => submit({ originalTrainerName })}
               />
@@ -87,7 +90,7 @@ export function TrainerTab() {
           },
           {
             key: 'gender',
-            label: 'Gender',
+            label: t('trainer.gender'),
             children: (
               <TrainerGenderRadio
                 value={details.originalTrainerGender}
@@ -98,7 +101,7 @@ export function TrainerTab() {
         ]}
       />
       <Descriptions
-        title={handledBy('handlingTrainer') ? 'Current Handler ✅' : 'Current Handler'}
+        title={handledBy('handlingTrainer') ? `${t('trainer.currentHandler')} ✅` : t('trainer.currentHandler')}
         bordered
         size="small"
         layout={layout}
@@ -106,9 +109,10 @@ export function TrainerTab() {
         items={[
           {
             key: 'name',
-            label: 'Name',
+            label: t('trainer.name'),
             children: (
               <NameInput
+                placeholder={t('trainer.name')}
                 value={details.handlingTrainerName}
                 onCommit={(handlingTrainerName) => submit({ handlingTrainerName })}
               />
@@ -116,7 +120,7 @@ export function TrainerTab() {
           },
           {
             key: 'gender',
-            label: 'Gender',
+            label: t('trainer.gender'),
             children: (
               <TrainerGenderRadio
                 value={details.handlingTrainerGender}
@@ -132,10 +136,11 @@ export function TrainerTab() {
 
 interface NameInputProps {
   value: string
+  placeholder?: string
   onCommit: (name: string) => unknown
 }
 
-function NameInput({ value, onCommit }: NameInputProps) {
+function NameInput({ value, placeholder = 'Name', onCommit }: NameInputProps) {
   const [draft, setDraft] = useState<string | null>(null)
   const commit = () => {
     if (draft !== null && draft !== value) onCommit(draft)
@@ -148,7 +153,7 @@ function NameInput({ value, onCommit }: NameInputProps) {
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
       onPressEnter={commit}
-      placeholder="Name"
+      placeholder={placeholder}
       style={{ maxWidth: 200 }}
     />
   )

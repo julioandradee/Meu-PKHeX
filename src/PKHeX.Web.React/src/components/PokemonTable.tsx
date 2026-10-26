@@ -1,38 +1,12 @@
-import { Table, type TableColumnsType } from 'antd'
+import { useMemo } from 'react'
+import { Table, type TableColumnsType, type TablePaginationConfig } from 'antd'
 import type { PokemonSummary } from '@pkhex-everywhere/engine'
+import { useTranslation } from '../i18n'
 import { PokemonActions } from './PokemonActions'
 import { PokemonSprite } from './PokemonSprite'
 import { NumberFilter } from './filters/NumberFilter'
 import { containsText } from './filters/containsText'
 import { TextFilter } from './filters/TextFilter'
-
-const leadingColumns: TableColumnsType<PokemonSummary> = [
-  {
-    key: 'sprite',
-    width: 80,
-    render: (_, pokemon) => <PokemonSprite pokemon={pokemon} />,
-  },
-  {
-    title: 'Name',
-    dataIndex: 'species',
-    sorter: (a, b) => a.species.localeCompare(b.species),
-    filterDropdown: (props) => <TextFilter {...props} placeholder="Name" />,
-    onFilter: (value, pokemon) => containsText(pokemon.species, value),
-  },
-  {
-    title: 'Level',
-    dataIndex: 'level',
-    sorter: (a, b) => a.level - b.level,
-    filterDropdown: (props) => <NumberFilter {...props} placeholder="Level" min={1} max={100} />,
-    onFilter: (value, pokemon) => pokemon.level === value,
-  },
-]
-
-const actionColumn: TableColumnsType<PokemonSummary>[number] = {
-  title: 'Action',
-  key: 'action',
-  render: (_, pokemon) => <PokemonActions pokemon={pokemon} />,
-}
 
 const rowKey = (pokemon: PokemonSummary) => JSON.stringify(pokemon.at)
 
@@ -42,14 +16,60 @@ interface PokemonTableProps {
   actions?: boolean
   selected?: PokemonSummary[]
   onSelectedChange?: (selected: PokemonSummary[]) => void
+  pageSize?: number
+  pagination?: TablePaginationConfig | false
 }
 
-export function PokemonTable({ pokemon, extraColumns = [], actions = true, selected = [], onSelectedChange }: PokemonTableProps) {
+export function PokemonTable({
+  pokemon,
+  extraColumns = [],
+  actions = true,
+  selected = [],
+  onSelectedChange,
+  pageSize = 50,
+  pagination,
+}: PokemonTableProps) {
+  const { t } = useTranslation()
+
+  const columns: TableColumnsType<PokemonSummary> = useMemo(
+    () => [
+      {
+        key: 'sprite',
+        width: 80,
+        render: (_: unknown, p: PokemonSummary) => <PokemonSprite pokemon={p} />,
+      },
+      {
+        title: t('table.name', 'Name'),
+        dataIndex: 'species',
+        sorter: (a, b) => a.species.localeCompare(b.species),
+        filterDropdown: (props) => <TextFilter {...props} placeholder={t('table.name', 'Name')} />,
+        onFilter: (value, p) => containsText(p.species, value),
+      },
+      {
+        title: t('table.level', 'Level'),
+        dataIndex: 'level',
+        sorter: (a, b) => a.level - b.level,
+        filterDropdown: (props) => <NumberFilter {...props} placeholder={t('table.level', 'Level')} min={1} max={100} />,
+        onFilter: (value, p) => p.level === value,
+      },
+      ...extraColumns,
+      ...(actions
+        ? [
+            {
+              title: t('table.action', 'Action'),
+              key: 'action',
+              render: (_: unknown, p: PokemonSummary) => <PokemonActions pokemon={p} />,
+            },
+          ]
+        : []),
+    ],
+    [t, extraColumns, actions],
+  )
   return (
     <Table<PokemonSummary>
       rowKey={rowKey}
       dataSource={pokemon}
-      columns={[...leadingColumns, ...extraColumns, ...(actions ? [actionColumn] : [])]}
+      columns={columns}
       rowSelection={
         onSelectedChange && {
           selectedRowKeys: selected.map(rowKey),
@@ -58,7 +78,17 @@ export function PokemonTable({ pokemon, extraColumns = [], actions = true, selec
       }
       size="small"
       scroll={{ x: 'max-content' }}
-      pagination={{ hideOnSinglePage: true }}
+      pagination={
+        pagination === false
+          ? false
+          : {
+              defaultPageSize: pageSize,
+              pageSizeOptions: ['10', '25', '50', '100'],
+              showSizeChanger: true,
+              showTotal: (total) => `${total} Pokémon`,
+              ...pagination,
+            }
+      }
     />
   )
 }

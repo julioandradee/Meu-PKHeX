@@ -11,6 +11,8 @@ import { TrainerTab } from './TrainerTab'
 import { MetConditionsTab } from './MetConditionsTab'
 import { StatsTab } from './StatsTab'
 
+import { useTranslation } from '../../i18n'
+
 interface DraftEditorProps {
   actions: ReactNode
 }
@@ -18,18 +20,19 @@ interface DraftEditorProps {
 export function DraftEditor({ actions }: DraftEditorProps) {
   const { pokemon } = usePokemon(draftHandle)
   const { details } = usePokemonDetails(draftHandle)
+  const { t } = useTranslation()
 
   return (
     <Flex vertical gap={20}>
-      <PageHeader title="Pokemon" extra={<PokemonImage pokemon={pokemon} />} />
+      <PageHeader title={pokemon.nickname || pokemon.species || 'Pokémon'} extra={<PokemonImage pokemon={pokemon} />} />
       {details.legality && <LegalityBanner legality={details.legality} />}
       <Tabs
         items={[
-          { key: 'description', label: 'Description', children: <DescriptionTab /> },
-          { key: 'metConditions', label: 'Met Conditions', children: <MetConditionsTab /> },
-          { key: 'stats', label: 'Stats', children: <StatsTab /> },
-          { key: 'moves', label: 'Moves', children: <MovesTab /> },
-          { key: 'trainer', label: 'Trainer', children: <TrainerTab /> },
+          { key: 'description', label: t('editor.tabs.description', 'Description'), children: <DescriptionTab /> },
+          { key: 'metConditions', label: t('editor.tabs.metConditions', 'Met Conditions'), children: <MetConditionsTab /> },
+          { key: 'stats', label: t('editor.tabs.stats', 'Stats'), children: <StatsTab /> },
+          { key: 'moves', label: t('editor.tabs.moves', 'Moves'), children: <MovesTab /> },
+          { key: 'trainer', label: t('editor.tabs.trainer', 'Trainer'), children: <TrainerTab /> },
         ]}
       />
       <Flex justify="end">{actions}</Flex>

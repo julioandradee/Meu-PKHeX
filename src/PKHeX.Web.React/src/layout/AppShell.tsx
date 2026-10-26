@@ -10,7 +10,6 @@ import { engine, plugIns } from '../app'
 import { useSupports } from '../hooks/useSupports'
 import { useLanguage, useTheme } from '../host'
 import { PlugInsProvider } from '../plugins/PlugInsContext'
-import AnalyticsPage from '../pages/analytics/AnalyticsPage'
 import BoxPage from '../pages/box/BoxPage'
 import CreditsPage from '../pages/static/CreditsPage'
 import EncountersPage from '../pages/encounters/EncountersPage'
@@ -30,6 +29,7 @@ import ReleaseNotesPage from '../pages/release-notes/ReleaseNotesPage'
 import SettingsPage from '../pages/settings/SettingsPage'
 import TermsOfUsePage from '../pages/static/TermsOfUsePage'
 import { routes } from '../routes'
+import { useTranslation } from '../i18n'
 import { EmptyPlugInLayout } from './EmptyPlugInLayout'
 import { AutoLoadDemo } from './AutoLoadDemo'
 import { GameJourney } from './GameJourney'
@@ -66,7 +66,8 @@ function Page({ title, requiresSave, capability, children }: PageProps) {
 }
 
 function RequireCapability({ capability, children }: { capability: SaveCapability; children: ReactNode }) {
-  return useSupports(capability) ? children : <p role="alert">This save doesn't support this page.</p>
+  const { t } = useTranslation()
+  return useSupports(capability) ? children : <p role="alert">{t('common.saveNotSupported', "This save doesn't support this page.")}</p>
 }
 
 const integer = (value: string | null) => (value && /^-?\d+$/.test(value) ? Number(value) : null)
@@ -121,6 +122,15 @@ function PlugInModuleRoute({ layout }: { layout: PageLayout }) {
   return <PlugInModulePage key={`${plugInId}/${path}`} plugInId={plugInId} path={path} layout={layout} />
 }
 
+function NotFoundPage() {
+  const { t } = useTranslation()
+  return (
+    <Page title={t('common.notFound', 'Not found')}>
+      <p role="alert">{t('common.pageNotFound', "Sorry, there's nothing at this address.")}</p>
+    </Page>
+  )
+}
+
 function AppRoutes({ autoLoad }: { autoLoad: boolean }) {
   return (
     <Routes>
@@ -138,14 +148,13 @@ function AppRoutes({ autoLoad }: { autoLoad: boolean }) {
         <Route path="plugins/:id" element={<PlugInRoute />} />
         <Route path="plugins/:plugInId/:path" element={<Page capability="plugIns"><PlugInModuleRoute layout="standard" /></Page>} />
         <Route path="plugins/:plugInId/:path/standard" element={<Page capability="plugIns"><PlugInModuleRoute layout="standard" /></Page>} />
-        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="save" element={<Page title="Save"><LoadPage /></Page>} />
         <Route path="settings" element={<Page title="Settings"><SettingsPage /></Page>} />
         <Route path="credits" element={<Page title="Credits"><CreditsPage /></Page>} />
         <Route path="privacy-policy" element={<Page title="Privacy Policy"><PrivacyPolicyPage /></Page>} />
         <Route path="terms-of-use" element={<Page title="Terms of Use"><TermsOfUsePage /></Page>} />
         <Route path="release-notes" element={<Page title="Release Notes"><ReleaseNotesRoute /></Page>} />
-        <Route path="*" element={<Page title="Not found"><p role="alert">Sorry, there's nothing at this address.</p></Page>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route element={<LoadLayout />}>
         <Route path="load" element={<LoadRoute autoLoad={autoLoad} />} />

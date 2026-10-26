@@ -5,12 +5,14 @@ import { useEngine, usePokemon, usePokemonDetails, useQuery } from '@pkhex-every
 import { PageHeader } from '../../components/PageHeader'
 import { PokemonImage } from '../../components/PokemonImage'
 import { downloadFile } from '../../host'
+import { useTranslation } from '../../i18n'
 
 interface ReadOnlyPokemonProps {
   at: PokemonHandle
 }
 
 export function ReadOnlyPokemon({ at }: ReadOnlyPokemonProps) {
+  const { t } = useTranslation()
   const engine = useEngine()
   const { pokemon } = usePokemon(at)
   const { details } = usePokemonDetails(at)
@@ -26,22 +28,22 @@ export function ReadOnlyPokemon({ at }: ReadOnlyPokemonProps) {
   }
 
   const items: DescriptionsProps['items'] = [
-    { key: 'species', label: 'Species', children: pokemon.species },
-    { key: 'nickname', label: 'Nickname', children: details.nickname },
-    { key: 'level', label: 'Level', children: details.level },
+    { key: 'species', label: t('editor.fields.species', 'Species'), children: pokemon.species },
+    { key: 'nickname', label: t('editor.fields.nickname', 'Nickname'), children: details.nickname },
+    { key: 'level', label: t('editor.fields.level', 'Level'), children: details.level },
     {
       key: 'pid',
       label: 'PID',
       children: <Typography.Text copyable>{details.pid.toString(16).toUpperCase().padStart(8, '0')}</Typography.Text>,
     },
-    { key: 'shiny', label: 'Shiny', children: details.isShiny ? 'Yes' : 'No' },
-    { key: 'heldItem', label: 'Held Item', children: nameOf(options.heldItems, details.heldItem) },
-    { key: 'ball', label: 'Ball', children: nameOf(balls, details.ball) },
-    { key: 'trainer', label: 'Original Trainer', children: `${details.originalTrainerName} (${details.trainerId})` },
-    { key: 'metLevel', label: 'Met Level', children: details.metLevel },
+    { key: 'shiny', label: t('editor.fields.shiny', 'Shiny'), children: details.isShiny ? 'Yes' : 'No' },
+    { key: 'heldItem', label: t('editor.fields.heldItem', 'Held Item'), children: nameOf(options.heldItems, details.heldItem) },
+    { key: 'ball', label: t('editor.fields.ball', 'Ball'), children: nameOf(balls, details.ball) },
+    { key: 'trainer', label: t('trainer.originalTrainer', 'Original Trainer'), children: `${details.originalTrainerName} (${details.trainerId})` },
+    { key: 'metLevel', label: t('met.level', 'Met Level'), children: details.metLevel },
     {
       key: 'moves',
-      label: 'Moves',
+      label: t('editor.tabs.moves', 'Moves'),
       children: details.moves
         .filter((move) => move.id !== 0)
         .map((move) => move.name)
@@ -51,8 +53,8 @@ export function ReadOnlyPokemon({ at }: ReadOnlyPokemonProps) {
 
   return (
     <Flex vertical gap={20}>
-      <PageHeader title="Pokemon" extra={<PokemonImage pokemon={pokemon} />} />
-      <Alert type="info" showIcon title="This Pokémon's species is unknown, so it can't be edited." />
+      <PageHeader title={pokemon.nickname || pokemon.species || 'Pokémon'} extra={<PokemonImage pokemon={pokemon} />} />
+      <Alert type="info" showIcon title={t('editor.readOnlyNotice', "This Pokémon's species is unknown, so it can't be edited.")} />
       <Descriptions
         bordered
         size="small"
@@ -61,7 +63,7 @@ export function ReadOnlyPokemon({ at }: ReadOnlyPokemonProps) {
         items={items}
       />
       <Flex justify="end">
-        <Button onClick={() => void exportFile()}>Export *.pk</Button>
+        <Button onClick={() => void exportFile()}>{t('editor.exportPk', 'Export *.pk')}</Button>
       </Flex>
     </Flex>
   )

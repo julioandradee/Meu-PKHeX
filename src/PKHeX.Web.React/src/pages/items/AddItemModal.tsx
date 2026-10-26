@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Flex, InputNumber, Modal } from 'antd'
 import type { AddableItem, Pouch } from '@pkhex-everywhere/engine'
 import { ItemSelect } from '../../components/ItemSelect'
+import { useTranslation } from '../../i18n'
 import { useSetItem } from './useSetItem'
 
 interface AddItemModalProps {
@@ -10,6 +11,7 @@ interface AddItemModalProps {
 }
 
 export function AddItemModal({ pouch, onClose }: AddItemModalProps) {
+  const { t } = useTranslation()
   const [item, setItem] = useState<AddableItem>()
   const [count, setCount] = useState<number | null>(null)
   const { submit, saving } = useSetItem()
@@ -27,7 +29,7 @@ export function AddItemModal({ pouch, onClose }: AddItemModalProps) {
   return (
     <Modal
       open
-      title={`Add item to "${pouch.name}"`}
+      title={`${t('items.addItemTo')} "${pouch.name}"`}
       onOk={handleOk}
       onCancel={onClose}
       confirmLoading={saving}
@@ -36,7 +38,7 @@ export function AddItemModal({ pouch, onClose }: AddItemModalProps) {
       <Flex vertical align="center" gap={20}>
         <ItemSelect items={pouch.addable} value={item?.id} onChange={selectItem} />
         <InputNumber<number>
-          placeholder="Quantity"
+          placeholder={t('items.quantity')}
           min={1}
           max={item?.maxCount}
           precision={0}

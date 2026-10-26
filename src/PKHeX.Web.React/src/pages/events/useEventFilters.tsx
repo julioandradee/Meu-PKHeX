@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Input, Select, Space } from 'antd'
+import { useTranslation } from '../../i18n'
 
 interface Filterable {
   name: string
@@ -9,6 +10,7 @@ interface Filterable {
 export const humanize = (category: string) => category.replace(/(?<=[a-z])(?=[A-Z])/g, ' ')
 
 export function useEventFilters<T extends Filterable>(entries: T[]) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<string>()
 
@@ -20,9 +22,15 @@ export function useEventFilters<T extends Filterable>(entries: T[]) {
 
   const filters = (
     <Space wrap>
-      <Input placeholder="Search" allowClear value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: 260 }} />
+      <Input
+        placeholder={t('events.filters.search', 'Search')}
+        allowClear
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ width: 260 }}
+      />
       <Select
-        placeholder="All categories"
+        placeholder={t('events.filters.allCategories', 'All categories')}
         allowClear
         value={category}
         onChange={setCategory}

@@ -5,10 +5,12 @@ import type { ItemHandle } from '@pkhex-everywhere/engine'
 import { useInventory } from '@pkhex-everywhere/react'
 import { ItemsTable } from '../../components/ItemsTable'
 import { PageHeader } from '../../components/PageHeader'
+import { useTranslation } from '../../i18n'
 import { AddItemModal } from './AddItemModal'
 import { EditItemModal } from './EditItemModal'
 
 export default function ItemsPage() {
+  const { t } = useTranslation()
   const { inventory } = useInventory()
   const [activeKey, setActiveKey] = useState<string>()
   const [editing, setEditing] = useState<ItemHandle>()
@@ -22,10 +24,10 @@ export default function ItemsPage() {
   return (
     <Flex vertical gap={20}>
       <PageHeader
-        title="Items"
+        title={t('items.title')}
         extra={
           <Button type="primary" icon={<PlusOutlined />} disabled={!active} onClick={() => setAddingTo(active?.name)}>
-            Add
+            {t('actions.add')}
           </Button>
         }
       />

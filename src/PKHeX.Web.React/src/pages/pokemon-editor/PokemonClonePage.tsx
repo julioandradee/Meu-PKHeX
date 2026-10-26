@@ -3,6 +3,7 @@ import { App, Button, Result, Spin } from 'antd'
 import { EngineError } from '@pkhex-everywhere/engine'
 import { useBox, useEngine, useParty } from '@pkhex-everywhere/react'
 import { useNavigate } from '../../host'
+import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
 import { DraftEditor } from './DraftEditor'
 import { editorView } from './editorView'
@@ -13,6 +14,7 @@ interface PokemonClonePageProps {
 }
 
 export default function PokemonClonePage({ source, id }: PokemonClonePageProps) {
+  const { t } = useTranslation()
   const { party } = useParty()
   const { box } = useBox()
   const engine = useEngine()
@@ -38,25 +40,25 @@ export default function PokemonClonePage({ source, id }: PokemonClonePageProps) 
     setPhase('adding')
     try {
       const added = await engine.pokemon.addToBox()
-      notification.success({ title: `${saved.species} cloned` })
+      notification.success({ title: `${saved.species} ${t('editor.clone.clonedSuccess', 'cloned')}` })
       await navigate(routes.box, { replace: true })
       await navigate(routes.pokemon(added))
     } catch (error) {
       setPhase('editing')
       if (!(error instanceof EngineError)) throw error
-      notification.error({ title: "Couldn't add the clone", description: error.message })
+      notification.error({ title: t('editor.clone.cloneError', "Couldn't add the clone"), description: error.message })
     }
   }
 
   if (phase === 'adding') return <Spin />
-  if (!saved) return <Result status="404" title="Pokémon not found" />
-  if (editorView(saved) === 'read-only') return <Result status="warning" title="This Pokémon's species is unknown, so it can't be cloned." />
+  if (!saved) return <Result status="404" title={t('editor.pokemonNotFound', 'Pokémon not found')} />
+  if (editorView(saved) === 'read-only') return <Result status="warning" title={t('editor.readOnlyCloneNotice', "This Pokémon's species is unknown, so it can't be cloned.")} />
   if (phase === 'opening') return <Spin />
   return (
     <DraftEditor
       actions={
         <Button type="primary" onClick={addToBox}>
-          Add to box
+          {t('editor.clone.addToBox', 'Add to box')}
         </Button>
       }
     />

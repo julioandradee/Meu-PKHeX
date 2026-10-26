@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Result, Spin } from 'antd'
 import { useBox, useEngine, useParty } from '@pkhex-everywhere/react'
 import { useNavigate } from '../../host'
+import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
 import { DraftEditor } from './DraftEditor'
 import { editorView } from './editorView'
@@ -14,6 +15,7 @@ interface PokemonEditorPageProps {
 }
 
 export default function PokemonEditorPage({ source, id }: PokemonEditorPageProps) {
+  const { t } = useTranslation()
   const { party } = useParty()
   const { box } = useBox()
   const engine = useEngine()
@@ -48,7 +50,7 @@ export default function PokemonEditorPage({ source, id }: PokemonEditorPageProps
   }
 
   if (phase === 'saving') return <Spin />
-  if (!saved) return <Result status="404" title="Pokémon not found" />
+  if (!saved) return <Result status="404" title={t('editor.pokemonNotFound', 'Pokémon not found')} />
   if (view === 'read-only') return <ReadOnlyPokemon at={saved.at} />
   if (phase === 'opening') return <Spin />
   return <DraftEditor actions={<SaveDropdown onSave={save} />} />
