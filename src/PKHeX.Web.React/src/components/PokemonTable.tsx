@@ -15,10 +15,11 @@ interface PokemonTableProps {
   extraColumns?: TableColumnsType<PokemonSummary>
   actions?: boolean
   selected?: PokemonSummary[]
-  onSelectedChange?: (selected: PokemonSummary[]) => void
+  onSelectedChange?: (selected: PokemonSummary[], selectedKeys: (string | number)[]) => void
   pageSize?: number
   pagination?: TablePaginationConfig | false
 }
+
 
 export function PokemonTable({
   pokemon,
@@ -72,10 +73,24 @@ export function PokemonTable({
       columns={columns}
       rowSelection={
         onSelectedChange && {
+          preserveSelectedRowKeys: true,
           selectedRowKeys: selected.map(rowKey),
-          onChange: (_, rows) => onSelectedChange(rows),
+          onChange: (selectedRowKeys, rows) => {
+            const keySet = new Set(selectedRowKeys.map(String))
+            const map = new Map<string, PokemonSummary>()
+            for (const p of selected) {
+              if (keySet.has(rowKey(p))) {
+                map.set(rowKey(p), p)
+              }
+            }
+            for (const p of rows) {
+              map.set(rowKey(p), p)
+            }
+            onSelectedChange(Array.from(map.values()), selectedRowKeys as (string | number)[])
+          },
         }
       }
+
       size="small"
       scroll={{ x: 'max-content' }}
       pagination={

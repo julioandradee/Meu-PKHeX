@@ -63,6 +63,7 @@ function pokemon(species: string, at: PokemonHandle): PokemonSummary {
 const kadabra = pokemon('Kadabra', { source: 'party', slot: 0 })
 const swampert = pokemon('Swampert', { source: 'party', slot: 1 })
 const zigzagoon = pokemon('Zigzagoon', { source: 'box', box: 0, slot: 3 })
+const pikachu = pokemon('Pikachu', { source: 'box', box: 1, slot: 0 })
 
 const movable = async (offer: TransferOffer): Promise<TransferPreview> => ({
   offers: offer.receive.map((at) => ({
@@ -99,12 +100,15 @@ const flush = () => act(async () => {})
 
 function renderTransfer(
   open: Engine['transfer']['open'],
-  { preview = movable }: { preview?: Engine['transfer']['preview'] } = {},
+  {
+    preview = movable,
+    partner = [kadabra, swampert, zigzagoon],
+  }: { preview?: Engine['transfer']['preview']; partner?: PokemonSummary[] } = {},
 ) {
   const transfer = {
     open: vi.fn(open),
     close: vi.fn(async () => {}),
-    partnerBoxes: vi.fn(async () => [kadabra, swampert, zigzagoon]),
+    partnerBoxes: vi.fn(async () => partner),
     preview: vi.fn(preview),
     commit: vi.fn(async (offer: TransferOffer) => ({
       ...moved,
@@ -112,6 +116,7 @@ function renderTransfer(
     })),
   }
   const engine = { subscribe: () => () => {}, transfer } as unknown as Engine
+
   const onClose = vi.fn()
   render(
     <App>
@@ -161,9 +166,20 @@ function renderTransfer(
       act(() => option.click())
       await flush()
     },
+    search: async (text: string) => {
+      const input = dialogs()[0].querySelector<HTMLInputElement>('input.ant-input')!
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      act(() => {
+        setValue.call(input, text)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+        input.dispatchEvent(new Event('change', { bubbles: true }))
+      })
+      await flush()
+    },
     notifications: () => document.querySelector('.ant-notification')?.textContent ?? '',
   }
 }
+
 
 describe('TransferModal', () => {
   it('asks for another save of the loaded game', () => {
@@ -323,4 +339,59 @@ describe('TransferModal', () => {
 
     expect(modal.rows()[0]).toContain('Alakazam')
   })
+
+  it('filters Pokémon by search input in party and boxes', async () => {
+    const modal = renderTransfer(async () => opened, {
+      partner: [kadabra, swampert, zigzagoon, pikachu],
+    })
+    await modal.openSave(partnerFile)
+
+    expect(modal.rows().length).toBe(2)
+    await modal.search('kada')
+    expect(modal.rows().length).toBe(1)
+    expect(modal.rows()[0]).toContain('Kadabra')
+
+    await modal.choose('Box')
+    expect(modal.rows().length).toBe(0)
+
+    await modal.search('pika')
+    expect(modal.rows().length).toBe(1)
+    expect(modal.rows()[0]).toContain('Pikachu')
+  })
+
+  it('preserves multi-selection across search and box switches allowing any number of transfers', async () => {
+    const modal = renderTransfer(async () => opened, {
+      partner: [kadabra, swampert, zigzagoon, pikachu],
+    })
+    await modal.openSave(partnerFile)
+
+    // Select Kadabra from party
+    await modal.pick('Kadabra')
+
+    // Filter party by search and select Swampert
+    await modal.search('swamp')
+    expect(modal.rows().length).toBe(1)
+    await modal.pick('Swampert')
+
+    // Clear search and switch to boxes
+    await modal.search('')
+    await modal.choose('Box')
+
+    // Select Zigzagoon from box 0
+    await modal.pick('Zigzagoon')
+
+    // Select Pikachu from box 1
+    await modal.pick('Pikachu')
+
+    // Expect 4 Pokémon selected across views
+    expect(modal.moveButton().textContent).toBe('Move 4 here')
+    expect(modal.moveButton().disabled).toBe(false)
+
+    await modal.move()
+    expect(modal.transfer.commit).toHaveBeenCalledWith({
+      send: [],
+      receive: [kadabra.at, swampert.at, zigzagoon.at, pikachu.at],
+    })
+  })
 })
+

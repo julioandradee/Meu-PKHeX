@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { App, Button, Flex, Modal, Segmented, Space, Typography, type TableColumnsType } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
+import { App, Button, Flex, Input, Modal, Segmented, Select, Space, Typography, type TableColumnsType } from 'antd'
 import {
   EngineError,
   type PokemonHandle,
@@ -12,6 +13,7 @@ import { useEngine } from '@pkhex-everywhere/react'
 import { gameName } from '../../capabilities'
 import { PokemonTable } from '../../components/PokemonTable'
 import { downloadFile } from '../../host'
+import { useTranslation } from '../../i18n'
 import { boxColumns } from './boxColumns'
 import { describeChange, refusalReasons } from './transferLabels'
 import { transferPick } from './transferPick'
@@ -48,11 +50,14 @@ function previewColumn(preview: TransferPreview | undefined): TableColumnsType<P
 export function TransferPicker({ transfer, onClose }: { transfer: TransferSummary; onClose: () => Promise<void> }) {
   const engine = useEngine()
   const { notification } = App.useApp()
+  const { t } = useTranslation()
   const [view, setView] = useState<View>('party')
   const [partnerPokemon, setPartnerPokemon] = useState<PokemonSummary[]>([])
   const [pickedKeys, setPickedKeys] = useState<string[]>([])
   const [previewed, setPreviewed] = useState<{ of: TransferOffer; preview: TransferPreview }>()
   const [moving, setMoving] = useState(false)
+  const [search, setSearch] = useState('')
+  const [boxFilter, setBoxFilter] = useState<string>('all')
 
   useEffect(() => {
     let current = true
@@ -61,6 +66,46 @@ export function TransferPicker({ transfer, onClose }: { transfer: TransferSummar
       current = false
     }
   }, [engine])
+
+  const partnerBoxes = useMemo(() => {
+    return partnerPokemon.filter((p) => p.at.source === 'box')
+  }, [partnerPokemon])
+
+  const boxOptions = useMemo(() => {
+    const boxSet = new Set<number>()
+    for (const p of partnerBoxes) {
+      if (typeof p.at.box === 'number') {
+        boxSet.add(p.at.box + 1)
+      }
+    }
+    const maxBox = Math.max(1, ...boxSet)
+    const options = [{ value: 'all', label: t('box.allBoxes', 'Todas as Caixas') }]
+    for (let i = 1; i <= maxBox; i++) {
+      const count = partnerBoxes.filter((p) => (p.at.box ?? 0) + 1 === i).length
+      options.push({
+        value: String(i),
+        label: `${t('box.boxLabel', 'Caixa')} ${i}${count > 0 ? ` (${count})` : ''}`,
+      })
+    }
+    return options
+  }, [partnerBoxes, t])
+
+  const displayed = useMemo(() => {
+    let list = partnerPokemon.filter((pokemon) => pokemon.at.source === view)
+    const q = search.trim().toLowerCase()
+    if (q) {
+      list = list.filter((p) => {
+        const matchesSpecies = p.species.toLowerCase().includes(q)
+        const matchesNickname = p.nickname ? p.nickname.toLowerCase().includes(q) : false
+        return matchesSpecies || matchesNickname
+      })
+    }
+    if (view === 'box' && boxFilter !== 'all') {
+      const targetBox = Number(boxFilter)
+      list = list.filter((p) => (p.at.box ?? 0) + 1 === targetBox)
+    }
+    return list
+  }, [partnerPokemon, view, search, boxFilter])
 
   const picked = useMemo(
     () => partnerPokemon.filter((pokemon) => pickedKeys.includes(pickKey(pokemon))),
@@ -80,10 +125,18 @@ export function TransferPicker({ transfer, onClose }: { transfer: TransferSummar
 
   const preview = previewed?.of === offer ? previewed.preview : undefined
   const pick = transferPick(offer.receive, transfer.room, preview)
-  const shown = partnerPokemon.filter((pokemon) => pokemon.at.source === view)
 
-  const changePicked = (rows: PokemonSummary[]) =>
-    setPickedKeys([...pickedKeys.filter((key) => !shown.some((pokemon) => pickKey(pokemon) === key)), ...rows.map(pickKey)])
+  const changePicked = (rows: PokemonSummary[], selectedKeys?: (string | number)[]) => {
+    if (selectedKeys) {
+      setPickedKeys(selectedKeys.map(String))
+      return
+    }
+    const newDisplayedKeys = rows.map(pickKey)
+    setPickedKeys((prevKeys) => [
+      ...prevKeys.filter((key) => !displayed.some((pokemon) => pickKey(pokemon) === key)),
+      ...newDisplayedKeys,
+    ])
+  }
 
   const move = async () => {
     setMoving(true)
@@ -143,9 +196,27 @@ export function TransferPicker({ transfer, onClose }: { transfer: TransferSummar
           value={view}
           onChange={setView}
         />
+        <Flex align="center" gap={10} wrap="wrap">
+          <Input
+            prefix={<SearchOutlined style={{ color: '#8c8c8c' }} />}
+            placeholder={t('box.searchPlaceholder', 'Buscar Pokémon...')}
+            allowClear
+            style={{ width: 190 }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {view === 'box' && (
+            <Select
+              value={boxFilter}
+              onChange={setBoxFilter}
+              options={boxOptions}
+              style={{ minWidth: 155 }}
+            />
+          )}
+        </Flex>
         <div style={{ maxHeight: '55vh', overflowY: 'auto' }}>
           <PokemonTable
-            pokemon={shown}
+            pokemon={displayed}
             extraColumns={[...(view === 'box' ? boxColumns : []), previewColumn(preview)]}
             actions={false}
             selected={picked}
@@ -156,3 +227,4 @@ export function TransferPicker({ transfer, onClose }: { transfer: TransferSummar
     </Modal>
   )
 }
+
