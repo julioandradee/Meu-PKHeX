@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "./dev.sh",
+    "dev:server": "vite",
+    "build:engine": "dotnet build ../PKHeX.Everywhere.Engine.Host",
     "build": "tsc --noEmit && dotnet publish ../PKHeX.Everywhere.Engine.Host -c Release && npm run build:blog && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
