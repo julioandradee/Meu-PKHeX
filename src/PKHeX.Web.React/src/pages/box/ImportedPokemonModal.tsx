@@ -1,7 +1,6 @@
 import { CheckCircleFilled } from '@ant-design/icons'
 import { Alert, Button, Flex, Modal, Table, Tag, Typography, type TableColumnsType } from 'antd'
 import type { PokemonSummary } from '@pkhex-everywhere/engine'
-import { PokemonSprite } from '../../components/PokemonSprite'
 import { useNavigate } from '../../host'
 import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
@@ -19,21 +18,6 @@ export function ImportedPokemonModal({ open, imported, failed = [], onClose }: I
 
   const columns: TableColumnsType<PokemonSummary> = [
     {
-      key: 'sprite',
-      width: 50,
-      render: (_: unknown, p: PokemonSummary) => <PokemonSprite pokemon={p} />,
-    },
-    {
-      title: t('table.dex', 'Nº Pokédex'),
-      key: 'dex',
-      width: 90,
-      render: (_: unknown, p: PokemonSummary) => (
-        <span style={{ color: '#8c8c8c', fontFamily: 'monospace', fontWeight: 600 }}>
-          {p.speciesId !== null ? `#${String(p.speciesId).padStart(4, '0')}` : '—'}
-        </span>
-      ),
-    },
-    {
       title: t('table.name', 'Nome'),
       key: 'name',
       render: (_: unknown, p: PokemonSummary) => (
@@ -45,6 +29,16 @@ export function ImportedPokemonModal({ open, imported, failed = [], onClose }: I
             </Typography.Text>
           )}
         </Flex>
+      ),
+    },
+    {
+      title: t('import.pokedexId', 'ID Pokédex'),
+      key: 'dex',
+      width: 110,
+      render: (_: unknown, p: PokemonSummary) => (
+        <span style={{ color: '#8c8c8c', fontFamily: 'monospace', fontWeight: 600 }}>
+          {p.speciesId !== null ? `#${String(p.speciesId).padStart(4, '0')}` : '—'}
+        </span>
       ),
     },
     {

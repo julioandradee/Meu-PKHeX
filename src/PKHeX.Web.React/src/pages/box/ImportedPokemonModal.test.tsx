@@ -63,11 +63,29 @@ describe('ImportedPokemonModal', () => {
       </MemoryRouter>,
     )
 
-    // Verify quantity is displayed
     const modalText = document.body.textContent ?? ''
+
+    // Verify quantity is displayed
     expect(modalText).toMatch(/2 Pokémon (importados|imported)/i)
 
-    // Verify names are displayed
+    // Verify headers sequence: nome+nickname, ID Pokedex, Nível, Localização, Ação
+    const ths = [...document.querySelectorAll('th')].map((th) => th.textContent?.trim())
+    expect(ths).toHaveLength(5)
+    expect(ths[0]).toMatch(/Nome|Name/)
+    expect(ths[1]).toMatch(/ID Pokédex|Pokédex ID/)
+    expect(ths[2]).toMatch(/Nível|Level/)
+    expect(ths[3]).toMatch(/Localização|Location/)
+    expect(ths[4]).toMatch(/Ação|Action/)
+
+    // Verify no sprite images are present
+    const images = document.querySelectorAll('.ant-table-tbody img')
+    expect(images.length).toBe(0)
+
+    // Verify Pokédex IDs are displayed formatted
+    expect(modalText).toContain('#0025')
+    expect(modalText).toContain('#0004')
+
+    // Verify names and nicknames are displayed
     expect(modalText).toContain('Pikachu')
     expect(modalText).toContain('Charmander')
     expect(modalText).toContain('"Sparky"')

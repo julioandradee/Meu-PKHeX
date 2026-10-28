@@ -82,6 +82,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'import.failedCount': '{0} arquivo(s) não puderam ser importados',
     'import.noneImported': 'Nenhum Pokémon pôde ser importado',
     'import.location': 'Localização',
+    'import.pokedexId': 'ID Pokédex',
     'common.close': 'Fechar',
 
     // Editor de Pokémon (UI)
@@ -351,6 +352,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'import.failedCount': '{0} file(s) failed to import',
     'import.noneImported': 'No Pokémon could be imported',
     'import.location': 'Location',
+    'import.pokedexId': 'Pokédex ID',
     'common.close': 'Close',
 
     // Pokemon Editor (UI)
@@ -620,6 +622,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'import.failedCount': '{0} archivo(s) no se pudieron importar',
     'import.noneImported': 'No se pudo importar ningún Pokémon',
     'import.location': 'Ubicación',
+    'import.pokedexId': 'ID Pokédex',
     'common.close': 'Cerrar',
 
     // Editor de Pokémon (UI)
