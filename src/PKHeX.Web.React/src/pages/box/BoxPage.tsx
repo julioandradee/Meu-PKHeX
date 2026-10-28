@@ -1,12 +1,13 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { SearchOutlined } from '@ant-design/icons'
-import { App, Flex, Input, Select } from 'antd'
+import { DownloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { App, Button, Flex, Input, Select } from 'antd'
 import type { PokemonSummary } from '@pkhex-everywhere/engine'
 import { useBox, useEngine, useLoadedGame } from '@pkhex-everywhere/react'
 import { ButtonOrMenu } from '../../components/ButtonOrMenu'
 import { PageHeader } from '../../components/PageHeader'
 import { PokemonTable } from '../../components/PokemonTable'
 import { useCopyShowdown } from '../../hooks/useCopyShowdown'
+import { useExportPokemon } from '../../hooks/useExportPokemon'
 import { useSupports } from '../../hooks/useSupports'
 import { openCalculator, useNavigate } from '../../host'
 import { useTranslation } from '../../i18n'
@@ -15,8 +16,6 @@ import { boxActions } from './boxActions'
 import { getBoxColumns } from './boxColumns'
 import { TransferModal } from './TransferModal'
 import { useLoadPokemonFile } from './useLoadPokemonFile'
-
-const selectionKey = (pokemon: PokemonSummary) => `${pokemon.id}@${JSON.stringify(pokemon.at)}`
 
 export default function BoxPage() {
   const { box } = useBox()
@@ -30,8 +29,9 @@ export default function BoxPage() {
   const loadPokemonFile = useLoadPokemonFile()
   const fileInput = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
+  const { exportMultiple, exporting } = useExportPokemon()
 
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([])
+  const [selected, setSelected] = useState<PokemonSummary[]>([])
   const [transferring, setTransferring] = useState(false)
   const [search, setSearch] = useState('')
   const [boxFilter, setBoxFilter] = useState<string>('all')
@@ -71,12 +71,18 @@ export default function BoxPage() {
 
   const filteredBox = useMemo(() => {
     return box.filter((pokemon) => {
-      // 1. Text search (species / nickname)
+      // 1. Text search (species / nickname / pokedex #)
       const q = search.trim().toLowerCase()
       if (q) {
         const matchesSpecies = pokemon.species.toLowerCase().includes(q)
         const matchesNickname = pokemon.nickname ? pokemon.nickname.toLowerCase().includes(q) : false
-        if (!matchesSpecies && !matchesNickname) return false
+        const cleanQ = q.replace(/^#/, '')
+        const matchesDex =
+          pokemon.speciesId !== null &&
+          (String(pokemon.speciesId) === cleanQ ||
+            String(pokemon.speciesId).padStart(4, '0').includes(cleanQ) ||
+            String(pokemon.speciesId).padStart(3, '0').includes(cleanQ))
+        if (!matchesSpecies && !matchesNickname && !matchesDex) return false
       }
 
       // 2. Box filter
@@ -99,8 +105,6 @@ export default function BoxPage() {
       return true
     })
   }, [box, search, boxFilter, levelFilter])
-
-  const selected = filteredBox.filter((pokemon) => selectedKeys.includes(selectionKey(pokemon)))
 
   const openSelectedInCalculator = async () => {
     const showdown = selected.length
@@ -149,6 +153,18 @@ export default function BoxPage() {
               options={levelOptions}
               style={{ minWidth: 135 }}
             />
+            {selected.length > 0 && (
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                loading={exporting}
+                onClick={() => void exportMultiple(selected, 'box_pokemon.zip')}
+              >
+                {selected.length === 1
+                  ? t('actions.exportSingle', 'Exportar (.pk)')
+                  : t('actions.exportZip', 'Exportar ({0}) como .zip').replace('{0}', String(selected.length))}
+              </Button>
+            )}
             <ButtonOrMenu
               actions={boxActions(
                 { encounters: encountersSupported, showdown: showdownSupported },
@@ -170,10 +186,12 @@ export default function BoxPage() {
         pokemon={filteredBox}
         extraColumns={getBoxColumns(t)}
         selected={selected}
-        onSelectedChange={(rows) => setSelectedKeys(rows.map(selectionKey))}
+        onSelectedChange={setSelected}
+        batchExport="box_pokemon.zip"
         pageSize={50}
       />
       {transferring && game && <TransferModal game={game} onClose={() => setTransferring(false)} />}
     </Flex>
   )
 }
+

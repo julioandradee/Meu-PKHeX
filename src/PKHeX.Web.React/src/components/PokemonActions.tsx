@@ -1,8 +1,10 @@
+import { DownloadOutlined } from '@ant-design/icons'
 import { Dropdown } from 'antd'
 import type { PokemonSummary } from '@pkhex-everywhere/engine'
 import { useEngine } from '@pkhex-everywhere/react'
 import { openCalculator, useNavigate } from '../host'
 import { useCopyShowdown } from '../hooks/useCopyShowdown'
+import { useExportPokemon } from '../hooks/useExportPokemon'
 import { useSupports } from '../hooks/useSupports'
 import { useTranslation } from '../i18n'
 import { routes } from '../routes'
@@ -16,6 +18,7 @@ export function PokemonActions({ pokemon }: PokemonActionsProps) {
   const navigate = useNavigate()
   const copyShowdown = useCopyShowdown()
   const showdownSupported = useSupports('showdown')
+  const { exportSingle } = useExportPokemon()
   const { t } = useTranslation()
   const showdown = () => engine.pokemon.showdown(pokemon.at)
 
@@ -29,6 +32,12 @@ export function PokemonActions({ pokemon }: PokemonActionsProps) {
           ...(pokemon.editable
             ? [{ key: 'clone', label: t('actions.clone', 'Clone'), onClick: () => navigate(routes.clonePokemon(pokemon)) }]
             : []),
+          {
+            key: 'export',
+            label: t('actions.exportPk', 'Export *.pk'),
+            icon: <DownloadOutlined />,
+            onClick: () => void exportSingle(pokemon),
+          },
           ...(showdownSupported
             ? [
                 {
@@ -50,3 +59,4 @@ export function PokemonActions({ pokemon }: PokemonActionsProps) {
     </Dropdown.Button>
   )
 }
+
