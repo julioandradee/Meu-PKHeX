@@ -14,6 +14,7 @@ import { useTranslation } from '../../i18n'
 import { routes } from '../../routes'
 import { boxActions } from './boxActions'
 import { getBoxColumns } from './boxColumns'
+import { ImportedPokemonModal } from './ImportedPokemonModal'
 import { TransferModal } from './TransferModal'
 import { useLoadPokemonFile } from './useLoadPokemonFile'
 
@@ -26,7 +27,7 @@ export default function BoxPage() {
   const encountersSupported = useSupports('encounters')
   const showdownSupported = useSupports('showdown')
   const { notification } = App.useApp()
-  const loadPokemonFile = useLoadPokemonFile()
+  const { loadFiles, importedPokemon, failedFiles, clearImported } = useLoadPokemonFile()
   const fileInput = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
   const { exportMultiple, exporting } = useExportPokemon()
@@ -122,9 +123,11 @@ export default function BoxPage() {
   }
 
   const loadFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const files = event.target.files
+    if (files && files.length > 0) {
+      await loadFiles(files)
+    }
     event.target.value = ''
-    if (file) await loadPokemonFile(file)
   }
 
   return (
@@ -178,7 +181,14 @@ export default function BoxPage() {
                 t,
               )}
             />
-            <input ref={fileInput} type="file" hidden onChange={loadFile} />
+            <input
+              ref={fileInput}
+              type="file"
+              hidden
+              multiple
+              accept=".pk,.pk1,.pk2,.pk3,.pk4,.pk5,.pk6,.pk7,.pk8,.pk9,.pb7,.pa8,.pa9,.ck3,.xk3,.zip"
+              onChange={loadFile}
+            />
           </Flex>
         }
       />
@@ -191,6 +201,12 @@ export default function BoxPage() {
         pageSize={50}
       />
       {transferring && game && <TransferModal game={game} onClose={() => setTransferring(false)} />}
+      <ImportedPokemonModal
+        open={importedPokemon.length > 0}
+        imported={importedPokemon}
+        failed={failedFiles}
+        onClose={clearImported}
+      />
     </Flex>
   )
 }
